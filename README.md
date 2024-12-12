@@ -48,4 +48,4 @@ Current Version: v6 (12-11-2024)
 ## Contact
 
 For questions and support:  
-G.Chikunova (galina.chikunova@geof.hr)
+G.Chikunova (galina.chikunova@geof.unizg.hr)
