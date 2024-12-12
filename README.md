@@ -1,15 +1,18 @@
 # FDAT - Forbush Decrease Analysis Tool
 
-A graphical interface tool for analyzing Forbush decrease and ICME events, performing in-situ analysis of ICMEs/flux ropes, and conducting ForbMod best-fit calculations on selected data regions.
+A graphical interface tool for analyzing Forbush decrease and ICME events, performing in-situ analysis of ICMEs and conducting ForbMod best-fit calculations on selected data regions.
 
 > **Note:** This repository currently contains only the ICME analysis functionality
 
 ## Features
 
-- Interactive visualization of ICME/Forbush decrease events
-- Border selection for ICME events
-- Data visualization and parameter extraction for insitu ICME analysis
-- Full version (not included) provides ForbMod best-fit calculations for Forbush Decreases
+FDAT enables to:
+
+- Plot and analyze ICME/Forbush decrease events
+- Select borders of ICME events and related Forbush decreases
+- Perform in-situ analysis of ICMEs
+- Execute ForbMod best-fit procedures on selected events
+- Generate comprehensive analysis outputs and visualizations
 
 ## Requirements
 
