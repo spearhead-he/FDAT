@@ -1,8 +1,12 @@
 # plot_window.py
 
-from PyQt5.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
-                           QLabel, QPushButton, QFrame, QGridLayout, 
-                           QMessageBox, QComboBox, QScrollArea, QSizePolicy)
+
+from PyQt5.QtWidgets import (
+    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
+    QLabel, QPushButton, QFrame, QGridLayout, 
+    QMessageBox, QComboBox, QScrollArea, QSizePolicy,
+    QApplication
+)
 from PyQt5.QtCore import Qt
 import pyqtgraph as pg
 from datetime import timedelta
@@ -34,42 +38,70 @@ class PlotWindow(QMainWindow):
         self.right_axes = []
         self.plot_items = []
         
+        # Get screen dimensions
+        screen = QApplication.primaryScreen().geometry()
+        self.screen_width = screen.width()
+        self.screen_height = screen.height()
+        
         self.setup_ui()
         self.load_data()
-    
-    def setup_ui(self):
-        """Initialize the UI components with scrolling"""
-        self.setWindowTitle("Data Analysis")
-        self.resize(1000, 1200)
         
-        # Create central widget
+    def setup_ui(self):
+        """Initialize the UI components with fixed control bar"""
+        self.setWindowTitle("Data Analysis")
+        
+        # Calculate initial window size
+        initial_width = min(900, int(self.screen_width * 0.65))
+        initial_height = min(1000, int(self.screen_height * 0.85))
+        self.resize(initial_width, initial_height)
+        
+        # Create main widget and layout
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
         main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(2)
         
-        # Create scroll area
+        # Create top section widget (info bar + plots)
+        top_widget = QWidget()
+        top_layout = QVBoxLayout(top_widget)
+        top_layout.setContentsMargins(0, 0, 0, 0)
+        top_layout.setSpacing(3)
+        
+        # Add info bar
+        self.setup_info_bar(top_layout)
+        
+        # Create scroll area for plots only
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        main_layout.addWidget(scroll_area)
         
-        # Create scrollable content widget
+        # Create scrollable content widget for plots
         scroll_content = QWidget()
         scroll_layout = QVBoxLayout(scroll_content)
-        scroll_layout.setSpacing(5)
+        scroll_layout.setSpacing(2)
         
-        # Add components to scroll layout
-        self.setup_info_bar(scroll_layout)
+        # Add plots
         self.setup_plots(scroll_layout)
-        self.setup_control_panel(scroll_layout)
         
-        # Set scroll content
+        # Set scroll content and add to top section
         scroll_area.setWidget(scroll_content)
+        top_layout.addWidget(scroll_area)
         
-        # Set minimum sizes for better responsiveness
-        self.setMinimumWidth(800)
+        # Add top section to main layout
+        main_layout.addWidget(top_widget)
+        
+        # Create and add control panel (fixed at bottom)
+        control_frame = QFrame()
+        control_frame.setFrameShape(QFrame.StyledPanel)
+        control_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        control_frame.setMinimumHeight(80)
+        self.setup_control_panel(control_frame)
+        main_layout.addWidget(control_frame)
+        
+        # Set minimum sizes
+        self.setMinimumWidth(00)
         self.setMinimumHeight(600)
         
     def setup_info_bar(self, parent_layout):
@@ -109,12 +141,16 @@ class PlotWindow(QMainWindow):
         parent_layout.addWidget(info_frame)
 
     def setup_plots(self, parent_layout):
-        """Set up plots with improved sizing"""
+        """Set up plots with improved sizing and responsiveness"""
         try:
             plots_frame = QFrame()
             plots_frame.setFrameShape(QFrame.StyledPanel)
             plots_layout = QVBoxLayout(plots_frame)
+            plots_layout.setSpacing(1)  # Minimal spacing between plots
             plots_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            
+            # Calculate initial plot height based on window height
+            default_plot_height = 120  # Reduced default height
             
             # Create plot widgets with flexible sizing
             plot_widgets = []
@@ -124,16 +160,18 @@ class PlotWindow(QMainWindow):
             for i in range(6):
                 plot_container = QFrame()
                 container_layout = QVBoxLayout(plot_container)
-                container_layout.setContentsMargins(0, 0, 0, 0)
+                container_layout.setContentsMargins(1, 1, 1, 1)  # Minimal margins
                 
                 pw = pg.PlotWidget()
                 pw.setBackground('w')
                 pw.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-                pw.setMinimumHeight(150)  # Reduced minimum height
+                pw.setMinimumHeight(default_plot_height)
+                pw.setMaximumHeight(default_plot_height * 2)  # Allow some expansion
                 
                 container_layout.addWidget(pw)
                 plots_layout.addWidget(plot_container)
                 
+                # Rest of the plot setup code remains the same...
                 plot = pw.plotItem
                 plot.showAxis('right')
                 view_box = None
@@ -158,8 +196,9 @@ class PlotWindow(QMainWindow):
                 else:
                     plot.getAxis('right').setStyle(showValues=False)
                 
-                plot.getAxis('left').setWidth(60)
-                plot.getAxis('right').setWidth(60)
+                # Optimize axis widths
+                plot.getAxis('left').setWidth(45)  # Reduced width
+                plot.getAxis('right').setWidth(45)  # Reduced width
                 
                 pw.showGrid(x=False, y=False)
                 
@@ -181,6 +220,16 @@ class PlotWindow(QMainWindow):
             logger.error(f"Error setting up plots: {str(e)}")
             raise
     
+    def resizeEvent(self, event):
+        """Handle window resize events"""
+        super().resizeEvent(event)
+        # Update plot heights based on new window size
+        if hasattr(self, 'plots') and self.plots:
+            new_height = max(120, min(200, event.size().height() // 7))
+            for plot in self.plots:
+                if isinstance(plot, pg.PlotItem):
+                    plot.getViewBox().setMaximumHeight(new_height)
+                    
     def updateViews(self, plot, view_box):
         if view_box is not None:
             view_box.setGeometry(plot.vb.sceneBoundingRect())
@@ -329,8 +378,8 @@ class PlotWindow(QMainWindow):
         try:
             self.regions = []
             start_pos = self.data_manager.start_date.timetuple().tm_yday
-    
-            # Initialize labels as class attributes
+            
+            # Initialize the labels as class attributes
             self.start_label = None
             self.end_label = None
     
@@ -350,44 +399,31 @@ class PlotWindow(QMainWindow):
         except Exception as e:
             logger.error(f"Error setting up selection regions: {str(e)}")
 
-    
-    def clear_plots(self):
-        """Clear all plots including view boxes"""
-        try:
-            self.regions = []
-            
-            for plot in self.plots:
-                plot.clear()
-                
-            for view_box in self.view_boxes:
-                if view_box is not None:
-                    for item in view_box.addedItems[:]:
-                        view_box.removeItem(item)
-                        
-            self.setup_helper_lines()
-            self.setup_selection_regions()
-            self.setup_movable_lines()
-        
-        except Exception as e:
-            logger.error(f"Error clearing plots: {str(e)}")
+
     
     def update_labels(self, region):
         """Update the position of the ICME border labels"""
         try:
+            # Skip label updates if they haven't been created yet
+            if not hasattr(self, 'start_label') or not hasattr(self, 'end_label'):
+                return
+                
             if isinstance(region, pg.LinearRegionItem):
                 bounds = region.getRegion()
-                view_range = self.plots[5].viewRange()
-                y_range = view_range[1]
-                
-                # Position labels at a fixed offset above the plot range
-                label_y = y_range[1]
-                
-                # Update positions
-                self.start_label.setPos(bounds[0], label_y)
-                self.end_label.setPos(bounds[1], label_y)
-                
+                if self.plots and len(self.plots) > 5:  # Check if we have enough plots
+                    view_range = self.plots[5].viewRange()
+                    if view_range and len(view_range) > 1:  # Check if view_range is valid
+                        y_range = view_range[1]
+                        
+                        # Update positions only if labels exist
+                        if self.start_label is not None:
+                            self.start_label.setPos(bounds[0], y_range[1])
+                        if self.end_label is not None:
+                            self.end_label.setPos(bounds[1], y_range[1])
+                            
         except Exception as e:
             logger.error(f"Error updating label positions: {str(e)}")
+            # Continue execution even if label update fails
     
     def resizeEvent(self, event):
         """Handle window resize events"""
@@ -398,9 +434,16 @@ class PlotWindow(QMainWindow):
                 if view_box is not None:
                     self.updateViews(plot, view_box)
             
-            # Update label positions
-            if hasattr(self, 'regions') and self.regions:
-                self.update_labels(self.regions[5])  # Use last panel's region
+            # Update plot heights based on new window size
+            if hasattr(self, 'plots') and self.plots:
+                new_height = max(120, min(200, event.size().height() // 7))
+                for plot in self.plots:
+                    if isinstance(plot, pg.PlotItem):
+                        plot.getViewBox().setMaximumHeight(new_height)
+            
+            # Only try to update labels if the regions exist
+            if hasattr(self, 'regions') and self.regions and len(self.regions) > 5:
+                self.update_labels(self.regions[5])
                 
         except Exception as e:
             logger.error(f"Error in resize event: {str(e)}")
@@ -804,34 +847,12 @@ class PlotWindow(QMainWindow):
             raise
 
     
-    def adjust_dates(self, days):
-        """Handle date navigation"""
-        try:
-            new_start = self.data_manager.start_date + timedelta(days=days)
-            new_end = self.data_manager.end_date + timedelta(days=days)
-            
-            # Clear plots before changing dates to avoid artifacts
-            self.clear_plots()
-            
-            # Update dates and reload data
-            self.on_dates_changed(new_start, new_end)
-            
-            # Ensure view boxes are properly updated
-            for plot, view_box in zip(self.plots, self.view_boxes):
-                if view_box is not None:
-                    self.updateViews(plot, view_box)
-                
-        except Exception as e:
-            logger.error(f"Error adjusting dates: {str(e)}")
-            QMessageBox.warning(self, "Warning", "Failed to adjust dates")
             
                 
-    def setup_control_panel(self, parent_layout):
-        """Set up the control panel at the bottom"""
-        control_frame = QFrame()
-        control_frame.setFrameShape(QFrame.StyledPanel)
-        control_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        control_layout = QHBoxLayout(control_frame)
+    def setup_control_panel(self, parent_frame):
+        """Set up the control panel with original navigation buttons"""
+        control_layout = QHBoxLayout(parent_frame)
+        control_layout.setContentsMargins(15, 12, 15, 12)
         
         # Navigation buttons
         nav_buttons = [
@@ -843,20 +864,104 @@ class PlotWindow(QMainWindow):
         
         for text, callback in nav_buttons:
             btn = QPushButton(text)
+            btn.setFixedWidth(100)
+            btn.setFixedHeight(45)
             btn.clicked.connect(callback)
+            btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #2196F3;
+                    color: white;
+                    border: none;
+                    padding: 10px;
+                    border-radius: 5px;
+                    font-size: 14px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                background-color: #1976D2;
+            }
+            QPushButton:checked {
+                background-color: #1565C0;
+            }
+            """)
             control_layout.addWidget(btn)
             
-        # Calculate button
-        calc_btn = QPushButton("Calculate")
-        calc_btn.clicked.connect(self.on_calculate_clicked)
-        control_layout.addWidget(calc_btn)
+        # Add stretch to push the right side elements to the right
+        control_layout.addStretch()
         
         # Fit type selection
         self.fit_type = QComboBox()
         self.fit_type.addItems(["Test", "Inner", "External", "Optimal"])
+        self.fit_type.setFixedWidth(150)
+        self.fit_type.setFixedHeight(45)
+        self.fit_type.setStyleSheet("""
+            QComboBox {
+                border: 1px solid #BDBDBD;
+                border-radius: 5px;
+                padding: 10px;
+                background-color: white;
+                font-size: 14px;
+            }
+            QComboBox:hover {
+                border: 1px solid #757575;
+            }
+            QComboBox::drop-down {
+                border: none;
+            }
+            QComboBox::down-arrow {
+                image: none;
+                border-left: 6px solid transparent;
+                border-right: 6px solid transparent;
+                border-top: 6px solid #757575;
+                margin-right: 8px;
+            }
+            QComboBox QAbstractItemView {
+                font-size: 14px;
+                border: 1px solid #BDBDBD;
+                background-color: white;
+                selection-background-color: #E0E0E0;
+                selection-color: black;
+                outline: none;
+            }
+            QComboBox QAbstractItemView::item {
+                min-height: 35px;
+                padding: 5px;
+            }
+            QComboBox QAbstractItemView::item:hover {
+                background-color: #EEEEEE;
+                color: black;
+            }
+            QComboBox QAbstractItemView::item:selected {
+                background-color: #E0E0E0;
+                color: black;
+            }
+        """)
         control_layout.addWidget(self.fit_type)
         
-        parent_layout.addWidget(control_frame)
+        # Calculate button
+        calc_btn = QPushButton("Calculate")
+        calc_btn.setFixedWidth(150)
+        calc_btn.setFixedHeight(45)
+        calc_btn.clicked.connect(self.on_calculate_clicked)
+        calc_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1a365d;
+                color: white;
+                border: none;
+                padding: 10px;
+                border-radius: 5px;
+                font-weight: bold;
+                font-size: 15px;
+            }
+            QPushButton:hover {
+            background-color: #2c4c8c;  
+            }
+            QPushButton:pressed {
+            background-color: #152a4a;  
+            }
+        """)
+        control_layout.addWidget(calc_btn)
+        
         
     def load_data(self):
         """Load and display the data with specific warnings"""
@@ -1016,30 +1121,204 @@ class PlotWindow(QMainWindow):
             QMessageBox.critical(self, "Error", f"Calculation failed: {str(e)}")
     
     def save_plot_window(self, results_dir):
-        """Save the current plot window state"""
+        """Save the current plot window state with adjusted figure size"""
         try:
-            # Define colors to match pyqtgraph
-            pen_black = 'black'
-            pen_blue = 'blue'
-            pen_red = 'red'
-            pen_green = 'darkgreen'
-            pen_gray = 'gray'
-    
-            # Create a figure to combine all plots
-            fig = plt.figure(figsize=(14, 16))
+            # Reduce figure size (original was 14, 16)
+            fig = plt.figure(figsize=(10, 12))
+            
+            # Create GridSpec with smaller spacing between subplots
+            gs = fig.add_gridspec(6, 1, height_ratios=[1, 1, 1, 1, 1, 1], hspace=0.15)
             
             # Get the boundaries
             region_bounds = self.regions[0].getRegion()
             upstream_start = self.movable_line_start.value()
             upstream_end = self.movable_line_end.value()
             
-            # [Rest of the existing plot saving code remains the same...]
+            # Get data
+            data = self.data_manager.load_data()
+            if not data:
+                raise ValueError("No data available for plotting")
+    
+            # Get time data and validate
+            time = data.get('time', [])
+            if len(time) == 0:
+                time = np.arange(len(next(iter(data.values()))))
+    
+            # Set time limits for x-axis
+            time_min = np.min(time) if len(time) > 0 else region_bounds[0] - 1
+            time_max = np.max(time) if len(time) > 0 else region_bounds[1] + 1
+    
+            # Loop through plots
+            for i in range(6):
+                # Create subplot using GridSpec
+                ax = fig.add_subplot(gs[i])
+                ax2 = None
+                
+            # Add twin axis for specific panels
+                if i in [0, 1, 2, 3]:
+                    ax2 = ax.twinx()
+    
+                # Plot data based on panel
+                if i == 0:  # B and dB
+                    if 'B' in data and len(data['B']) > 0:
+                        b_data = np.array(data['B'])
+                        valid_mask = ~np.isnan(b_data)
+                        if np.any(valid_mask):
+                            ax.plot(time[valid_mask], b_data[valid_mask], 'k-', label='B')
+                            ax.set_ylabel('B [nT]')
+                    
+                    if 'B_fluct' in data and len(data['B_fluct']) > 0 and ax2:
+                        b_fluct = np.array(data['B_fluct'])
+                        valid_mask = ~np.isnan(b_fluct)
+                        if np.any(valid_mask):
+                            ax2.plot(time[valid_mask], b_fluct[valid_mask], color='gray', label='dB')
+                            ax2.set_ylabel('dB [nT]')
+    
+                elif i == 1:  # B components
+                    for comp, color, label in zip(['Bx', 'By', 'Bz'], ['r', 'b', 'g'], ['Bx', 'By', 'Bz']):
+                        if comp in data and len(data[comp]) > 0:
+                            comp_data = np.array(data[comp])
+                            valid_mask = ~np.isnan(comp_data)
+                            if np.any(valid_mask):
+                                ax.plot(time[valid_mask], comp_data[valid_mask], color=color, label=label)
+                    ax.set_ylabel('B [nT]')
+    
+                elif i == 2:  # V and Beta
+                    if 'V' in data and len(data['V']) > 0:
+                        v_data = np.array(data['V'])
+                        valid_mask = ~np.isnan(v_data)
+                        if np.any(valid_mask):
+                            ax.plot(time[valid_mask], v_data[valid_mask], 'k-', label='V')
+                            ax.set_ylabel('V [km/s]')
+                    
+                    if 'Beta' in data and len(data['Beta']) > 0 and ax2:
+                        beta_data = np.array(data['Beta'])
+                        valid_mask = ~np.isnan(beta_data)
+                        if np.any(valid_mask):
+                            ax2.plot(time[valid_mask], beta_data[valid_mask], 'b-', label='β')
+                            ax2.set_ylabel('log₂(β)')
+    
+                elif i == 3:  # T and density
+                    if 'T' in data and len(data['T']) > 0:
+                        t_data = np.array(data['T'])
+                        valid_mask = ~np.isnan(t_data)
+                        if np.any(valid_mask):
+                            ax.plot(time[valid_mask], t_data[valid_mask], 'r-', label='T')
+                            ax.set_ylabel('T [K]')
+                    
+                    if 'density' in data and len(data['density']) > 0 and ax2:
+                        n_data = np.array(data['density'])
+                        valid_mask = ~np.isnan(n_data)
+                        if np.any(valid_mask):
+                            ax2.plot(time[valid_mask], n_data[valid_mask], 'b-', label='n')
+                            ax2.set_ylabel('n [cm⁻³]')
+    
+                elif i in [4, 5]:  # GCR plots
+                    gcr_key = 'GCR' if i == 4 else 'GCR_additional'
+                    if gcr_key in data and len(data[gcr_key]) > 0:
+                        gcr_data = np.array(data[gcr_key])
+                        valid_mask = ~np.isnan(gcr_data)
+                        if np.any(valid_mask):
+                            first_valid = gcr_data[np.where(valid_mask)[0][0]]
+                            plot_data = ((gcr_data - first_valid) / first_valid) * 100
+                            ax.plot(time[valid_mask], plot_data[valid_mask], 'ko-', 
+                                   markersize=4, label=gcr_key)
+                    ax.set_ylabel('GCR [%]')
+    
+                # Add ICME boundaries shading
+                ax.axvspan(region_bounds[0], region_bounds[1], alpha=0.2, color='blue', label='ICME')
+                
+                # Add upstream window shading to speed panel
+                if i == 2:
+                    ax.axvspan(upstream_start, upstream_end, alpha=0.2, color='purple', label='Upstream')
+    
+                # Set x-axis limits
+                ax.set_xlim(time_min, time_max)
+                
+                # Add grid
+                ax.grid(True, alpha=0.3, linestyle='--')
+    
+                # Make fonts smaller
+                ax.tick_params(labelsize=8)
+                if ax2:
+                    ax2.tick_params(labelsize=8)
+                ax.yaxis.label.set_size(9)
+                if ax2:
+                    ax2.yaxis.label.set_size(9)
+                
+                # Smaller legend
+                handles1, labels1 = ax.get_legend_handles_labels()
+                if ax2:
+                    handles2, labels2 = ax2.get_legend_handles_labels()
+                    handles = handles1 + handles2
+                    labels = labels1 + labels2
+                else:
+                    handles = handles1
+                    labels = labels1
+                
+                if handles:
+                    ax.legend(handles, labels, loc='upper right', fontsize=7, 
+                             bbox_to_anchor=(1.0, 1.0))
+    
+                # Set x-label for bottom plot only
+                if i == 5:
+                    ax.set_xlabel(f'DOY [{self.data_manager.start_date.year}]', fontsize=9)
+                
+                # Set title for top plot
+                if i == 0:
+                    ax.set_title(f"{self.data_manager.satellite} {self.data_manager.start_date.strftime('%Y/%m/%d')}", 
+                                fontsize=10, pad=3)
+    
+            # Adjust layout with tighter spacing
+            plt.tight_layout(pad=1.0, h_pad=0.5, w_pad=0.5)
             
-            # Save figure
+            # Save figure with reduced DPI
             plt.savefig(os.path.join(results_dir, 'plot_window.png'), 
-                       dpi=300, bbox_inches='tight')
+                       dpi=200, bbox_inches='tight')
             plt.close(fig)
     
         except Exception as e:
             logger.error(f"Error saving plot window: {str(e)}")
             raise
+
+
+    def adjust_dates(self, days):
+        """Handle date navigation"""
+        try:
+            new_start = self.data_manager.start_date + timedelta(days=days)
+            new_end = self.data_manager.end_date + timedelta(days=days)
+            
+            # Clear plots before changing dates to avoid artifacts
+            self.clear_plots()
+            
+            # Update dates and reload data
+            self.on_dates_changed(new_start, new_end)
+            
+            # Ensure view boxes are properly updated
+            for plot, view_box in zip(self.plots, self.view_boxes):
+                if view_box is not None:
+                    self.updateViews(plot, view_box)
+                
+        except Exception as e:
+            logger.error(f"Error adjusting dates: {str(e)}")
+            QMessageBox.warning(self, "Warning", "Failed to adjust dates")
+        
+    def clear_plots(self):
+        """Clear all plots including view boxes"""
+        try:
+            self.regions = []
+            
+            for plot in self.plots:
+                plot.clear()
+                
+            for view_box in self.view_boxes:
+                if view_box is not None:
+                    for item in view_box.addedItems[:]:
+                        view_box.removeItem(item)
+                        
+            self.setup_helper_lines()
+            self.setup_selection_regions()
+            self.setup_movable_lines()
+        
+        except Exception as e:
+            logger.error(f"Error clearing plots: {str(e)}")
