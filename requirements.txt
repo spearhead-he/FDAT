@@ -3,29 +3,10 @@ numpy
 scipy
 matplotlib
 scikit-learn
-mpmath
 
 # GUI libraries
 PyQt5
 pyqtgraph
 
-# Time and date handling
-python-dateutil
-
-# Logging and system utilities
-logging
-
 # Data manipulation and analysis
 pandas
-
-# JSON handling for settings
-simplejson
-
-# Development tools (optional)
-pytest # For testing
-flake8 # For code quality checks
-black  # For code formatting
-
-# Additional dependencies
-setuptools
-wheel
