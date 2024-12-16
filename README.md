@@ -1,8 +1,8 @@
 # FDAT - Forbush Decrease Analysis Tool
 
-A graphical interface tool for analyzing Forbush decrease and ICME events, conducting ForbMod best-fit calculations on selected data regions and performing in-situ analysis of ICMEs.
+A graphical interface tool for analyzing Forbush decrease and Interplanetary Coronal Mass Ejection (ICME) events, conducting [ForbMod](https://dx.doi.org/10.3847/1538-4357/aac2de) best-fit calculations on selected data regions and performing in-situ analysis of ICMEs.
 
-> **Note:** This repository currently contains only the ICME analysis functionality (without GCR data)
+> ⚠️ **Note:** This repository currently contains only the ICME analysis functionality (without GCR data) ⚠️
 
 ## Features
 
@@ -77,4 +77,4 @@ Current Version: v6 (12-11-2024)
 ## Contact
 
 For questions and support:  
-G.Chikunova (galina.chikunova@geof.unizg.hr)
+G. Chikunova (galina.chikunova@geof.unizg.hr)
