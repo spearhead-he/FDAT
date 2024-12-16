@@ -65,7 +65,7 @@ class FitWindow(QMainWindow):
 
         self.checkboxes = [
             QCheckBox("good"),
-            QCheckBox("assymetric"),
+            QCheckBox("asymmetric"),
             QCheckBox("few-data-points"),
             QCheckBox("large-scatter"),
             QCheckBox("under-recovery"),
