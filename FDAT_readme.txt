@@ -26,21 +26,33 @@ Prerequisites:
 - Python 3.10.6 or later
 - Operating System: Tested on Windows, macOS, should work on Linux
 
-Core scientific libraries:
+Core Scientific Libraries:
 
 numpy>=1.24.0 (array operations, calculations)
 scipy>=1.10.0 (scientific computations)
 matplotlib>=3.7.0 (plotting)
 scikit-learn>=1.2.0 (data analysis)
 mpmath>=1.3.0 (mathematical functions)
+pandas>=2.0.0 (data manipulation)
 
-GUI libraries
+GUI Libraries:
 
 PyQt5>=5.15.0 (main GUI framework)
 pyqtgraph>=0.13.0 (fast plotting)
 
-Data manipulation and analysis
-pandas>=2.0.0 
+Additional Libraries:
+
+python-dateutil>=2.8.0 (date handling)
+setuptools>=65.5.1 (package management)
+wheel>=0.38.0 (package management)
+
+Optional Development Tools:
+
+pytest>=7.0.0 (testing)
+flake8>=6.0.0 (code quality)
+black>=22.0.0 (code formatting)
+
+
 
 Installation Steps:
 -----------------
