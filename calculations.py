@@ -19,7 +19,7 @@ class CalculationManager:
         doy_int = int(doy)
         hour = int((doy - doy_int) * 24)
         hour_index = (doy_int - start_doy) * 24 + hour
-
+        print(f"  Start DOY: {start_doy}")
         return hour_index
 
     def perform_calculations(self, doy_start, doy_end, upstream_start, upstream_end):
@@ -137,6 +137,8 @@ class CalculationManager:
             hourly_data = self.data_manager.get_data('GCR', hourly=True)
             forbush = hourly_data[t_hour:z_hour+1].copy()
             
+            print(f"Number of total GCR points: {len(forbush)}")
+            print(f"Number of NaN points: {np.sum(np.isnan(forbush))}")
             
             # Create time points array
             num_points = len(forbush)
@@ -147,6 +149,7 @@ class CalculationManager:
             valid_forbush = forbush[valid_mask]
             valid_r_points = r_points[valid_mask]
             
+            print(f"Number of valid points after NaN filtering: {len(valid_forbush)}")
             
             if len(valid_forbush) < 2:
                 raise ValueError(f"Not enough valid points for fit. Need at least 2, got {len(valid_forbush)}")
@@ -173,35 +176,50 @@ class CalculationManager:
             logger.error(f"Error preparing fit data: {str(e)}")
             raise
 
+    def calculate_average(self, index, data, window=60):
+        """Calculate average around an index with proper NaN handling"""
+        try:
+            # Handle NaN index
+            if np.isnan(index):
+                return np.nan
+                
+            # Convert to integer safely
+            index = int(np.floor(index))
+            
+            # Set window boundaries
+            start_idx = max(0, index - window//2)
+            end_idx = min(len(data), index + window//2)
+            
+            # Extract window data
+            window_data = data[start_idx:end_idx]
+            valid_data = window_data[~np.isnan(window_data)]
+            
+            return np.mean(valid_data) if len(valid_data) > 0 else np.nan
+            
+        except Exception as e:
+            logger.error(f"Error calculating average: {str(e)}")
+            return np.nan
+    
     def calculate_speeds(self, v_data, doy_start, doy_end, upstream_start, upstream_end):
         """Calculate all speed-related parameters with proper NaN handling"""
         try:
-            # Initialize indices as NaN
+            # Convert DOY to indices safely
             start_index = np.nan
             end_index = np.nan
             
             try:
                 start_doy = self.data_manager.start_date.timetuple().tm_yday
-                
-                # Safely convert DOY to minute indices - use floor to avoid partial indices
-                if not np.isnan(doy_start) and not np.isnan(start_doy):
-                    start_index = float((doy_start - start_doy) * 24 * 60)
-                    start_index = int(np.floor(start_index)) if not np.isnan(start_index) else np.nan
-                    
-                if not np.isnan(doy_end) and not np.isnan(start_doy):
-                    end_index = float((doy_end - start_doy) * 24 * 60)
-                    end_index = int(np.floor(end_index)) if not np.isnan(end_index) else np.nan
+                start_index = (doy_start - start_doy) * 24 * 60
+                end_index = (doy_end - start_doy) * 24 * 60
             except Exception as e:
                 logger.warning(f"Error converting DOY to indices: {str(e)}")
-                start_index = np.nan
-                end_index = np.nan
             
-            # Calculate center index only if both start and end are valid
+            # Calculate center index
             center = np.nan
             if not (np.isnan(start_index) or np.isnan(end_index)):
-                center = int((start_index + end_index) // 2)
+                center = (start_index + end_index) // 2
             
-            # Calculate speeds with NaN propagation
+            # Calculate speeds with NaN handling
             vLead = round(self.calculate_average(start_index, v_data)) if not np.isnan(start_index) else np.nan
             vTrail = round(self.calculate_average(end_index, v_data)) if not np.isnan(end_index) else np.nan
             v_center = round(self.calculate_average(center, v_data)) if not np.isnan(center) else np.nan
@@ -209,13 +227,12 @@ class CalculationManager:
             # Calculate upstream speed
             upstream_w = self.calculate_upstream(upstream_start, upstream_end, v_data)
             
-            # Calculate statistics with safe index handling
-            if np.isnan(start_index) or np.isnan(end_index):
-                vPeak = vAvg = vMedian = vStdev = np.nan
-            else:
-                s_idx = int(np.floor(max(0, start_index)))
-                e_idx = int(np.ceil(min(len(v_data), end_index)))
-                vPeak, vAvg, vMedian, vStdev = self.calculate_stats(s_idx, e_idx, v_data)
+            # Calculate statistics
+            vPeak, vAvg, vMedian, vStdev = self.calculate_stats(
+                start_index if not np.isnan(start_index) else 0,
+                end_index if not np.isnan(end_index) else len(v_data),
+                v_data
+            )
             
             return {
                 'vLead': vLead,
@@ -230,48 +247,7 @@ class CalculationManager:
             
         except Exception as e:
             logger.error(f"Error calculating speeds: {str(e)}")
-            # Return dictionary with all NaN values on error
-            return {
-                'vLead': np.nan,
-                'vTrail': np.nan,
-                'v_center': np.nan,
-                'upstream_w': np.nan,
-                'vAvg': np.nan,
-                'vMedian': np.nan,
-                'vStdev': np.nan,
-                'vPeak': np.nan
-            }
-    
-    def calculate_average(self, index, data, window=60):
-        """Calculate average around an index with proper NaN handling"""
-        try:
-            # Handle invalid inputs
-            if np.isnan(index) or index is None:
-                return np.nan
-                
-            # Convert to integer safely
-            try:
-                index = int(np.floor(float(index)))
-            except (ValueError, TypeError):
-                return np.nan
-                
-            # Validate index bounds
-            if index < 0 or index >= len(data):
-                return np.nan
-                
-            # Set window boundaries
-            start_idx = max(0, index - window//2)
-            end_idx = min(len(data), index + window//2)
-            
-            # Extract window data and handle NaNs
-            window_data = data[start_idx:end_idx]
-            valid_data = window_data[~np.isnan(window_data)]
-            
-            return np.mean(valid_data) if len(valid_data) > 0 else np.nan
-            
-        except Exception as e:
-            logger.error(f"Error calculating average: {str(e)}")
-            return np.nan
+            raise
     
     def calculate_upstream(self, start, end, data):
         """Calculate upstream speed average with NaN handling"""

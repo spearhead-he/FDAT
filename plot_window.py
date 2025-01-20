@@ -22,14 +22,12 @@ from output_handler import OutputHandler
 logger = logging.getLogger(__name__)
 
 class PlotWindow(QMainWindow):
-    def __init__(self, data_manager, observer_name=None, on_calculate=None, on_dates_changed=None, analysis_type="ForbMod"):
+    def __init__(self, data_manager, observer_name, on_calculate, on_dates_changed):
         super().__init__()
         self.data_manager = data_manager
-        self.observer_name = observer_name
-        self.analysis_type = analysis_type  # Store analysis type
         self.on_calculate = on_calculate
+        self.observer_name = observer_name
         self.on_dates_changed = on_dates_changed
-        self.script_directory = os.path.dirname(os.path.abspath(__file__))
         
         # Initialize plot-related attributes
         self.regions = []
@@ -468,7 +466,9 @@ class PlotWindow(QMainWindow):
             logger.error(f"Error updating regions: {str(e)}")
     
 
+
     
+            
     def update_all_boundaries_from_line(self, changed_line, is_start):
         """Update all regions and lines when a line is moved"""
         try:
@@ -628,7 +628,7 @@ class PlotWindow(QMainWindow):
                             plot_data = ((gcr_additional - first_valid) / first_valid) * 100
                             
                             # Set name based on satellite type
-                            name = '1C_L' if self.data_manager.satellite == 'SolO' else 'CE'
+                            name = '2C_L' if self.data_manager.satellite == 'SolO' else 'CE'
                             
                             self.plots[5].plot(
                                 time[valid_mask],
@@ -969,11 +969,16 @@ class PlotWindow(QMainWindow):
             logger.info("Loading data for plotting")
             print("About to load data...")
             data = self.data_manager.load_data()
-                
+            
+            print("Data loaded, type:", type(data))
+            if isinstance(data, dict):
+                print("Data keys:", data.keys())
+            
             if not data:
                 logger.warning("No data loaded")
                 return
                 
+            print("About to plot data...")
             self.plot_data(data)
             print("Data plotted successfully")
     
@@ -1018,7 +1023,7 @@ class PlotWindow(QMainWindow):
 
 
     def on_calculate_clicked(self):
-        """Handle calculate button click event"""
+        """Handle calculate button click event with direct saving when no GCR data"""
         try:
             # Validate selections
             if not self.regions:
@@ -1032,267 +1037,250 @@ class PlotWindow(QMainWindow):
             # Get region bounds and line positions
             region = self.regions[0].getRegion()
             upstream_window = (self.movable_line_start.value(), self.movable_line_end.value())
+    
+            # Get current fit type and prepare output directory
             current_fit_type = self.fit_type.currentText()
+            results_dir = self.data_manager.create_output_directory(current_fit_type)
+            
+            # Ensure output directories exist
+            if not os.path.exists(results_dir):
+                os.makedirs(results_dir)
     
             # Create calculator instance
             calculator = CalculationManager(self.data_manager)
             
             # Perform calculations
             calc_results = calculator.perform_calculations(
-                region[0], region[1],
-                upstream_window[0], upstream_window[1]
+                region[0], region[1],  # ICME window
+                upstream_window[0], upstream_window[1]  # Upstream window
             )
     
-            if not calc_results:
-                raise ValueError("Calculation failed to produce results")
+            # Check for GCR data availability
+            if not calc_results.get('has_gcr_data', False):
+                # Show warning
+                QMessageBox.warning(self, "Warning", 
+                    "No GCR data available. Only ICME parameters will be saved.")
     
-            # Create publication-quality figure
-            fig = self.create_publication_quality_figure(calc_results)
+                # Prepare output info
+                output_info = {
+                    'script_directory': os.path.dirname(os.path.abspath(__file__)),
+                    'results_directory': results_dir,
+                    'day': self.data_manager.start_date.strftime('%Y/%m/%d'),
+                    'fit': current_fit_type.lower(),
+                    'observer_name': self.observer_name,
+                    'data_manager': self.data_manager 
+                }
     
-            # Check GCR data availability
-            has_gcr_data = calc_results.get('has_gcr_data', False)
-            
-            # If no GCR data, automatically set to in-situ analysis
-            if not has_gcr_data and self.analysis_type == "ForbMod":
-                self.analysis_type = "In-situ analysis"
-                QMessageBox.information(
-                    self,
-                    "Notice",
-                    "No GCR data available. Switching to in-situ analysis."
-                )
+                # Save the plot window
+                self.save_plot_window(results_dir)
     
-            # Get the appropriate date for directory naming
-            doy_start = calc_results['timestamps']['doy_start']
-            date = self.data_manager.start_date + timedelta(days=int(doy_start) - self.data_manager.start_date.timetuple().tm_yday)
-            
-            # Get directory path (but don't create it yet for ForbMod)
-            results_dir = self.data_manager.create_output_directory(current_fit_type, use_date=date)
-    
-            # For in-situ analysis or no GCR data, save immediately
-            if self.analysis_type == "In-situ analysis" or not has_gcr_data:
-                os.makedirs(results_dir, exist_ok=True)
-                output_handler = OutputHandler(results_dir, self.script_directory)
+                # Create output handler and save results directly
+                output_handler = OutputHandler(results_dir, output_info['script_directory'])
                 
-                # Save results
-                output_handler.save_all_plots(fig, calc_results)
+                # Save parameters and update CSV
+                output_handler.save_parameters(output_info, calc_results)
                 output_handler.update_results_csv(
                     sat=self.data_manager.satellite,
                     detector=self.data_manager.detector,
                     observer=self.observer_name,
                     calc_results=calc_results,
-                    day=date.strftime('%Y/%m/%d'),
-                    fit_type=current_fit_type.lower(),
-                    fit_categories=[]
+                    day=output_info['day'],
+                    fit_type=current_fit_type,
+                    fit_categories=['no GCR data']
                 )
                 
-                QMessageBox.information(
-                    self,
-                    "Success",
-                    f"Parameters saved successfully in:\n{results_dir}"
-                )
-            else:
-                # Show fit window for ForbMod analysis with GCR data
-                self.fit_window = FitWindow(
-                    sat=self.data_manager.satellite,
-                    detector=self.data_manager.detector,
-                    observer=self.observer_name,
-                    calc_results=calc_results,
-                    output_info={
-                        'script_directory': self.script_directory,
-                        'results_directory': results_dir,  # Pass the directory path
-                        'day': date.strftime('%Y/%m/%d'),
-                        'fit': current_fit_type.lower(),
-                        'observer_name': self.observer_name,
-                        'data_manager': self.data_manager,
-                        'figure': fig
-                    }
-                )
-                self.fit_window.show()
+                QMessageBox.information(self, "Success", 
+                    "ICME parameters have been saved successfully.")
+                return
     
-            plt.close(fig)
+            # If we have GCR data, proceed with fit window as normal
+            output_info = {
+                'script_directory': os.path.dirname(os.path.abspath(__file__)),
+                'results_directory': results_dir,
+                'day': self.data_manager.start_date.strftime('%Y/%m/%d'),
+                'fit': current_fit_type.lower(),
+                'observer_name': self.observer_name,
+                'data_manager': self.data_manager 
+            }
+    
+            # Save the plot window
+            self.save_plot_window(results_dir)
+    
+            # Show fit window with calculation results
+            self.fit_window = FitWindow(
+                sat=self.data_manager.satellite,
+                detector=self.data_manager.detector,
+                observer=self.observer_name,
+                calc_results=calc_results,
+                output_info=output_info
+            )
+            self.fit_window.show()
     
         except Exception as e:
             logger.error(f"Error during calculation: {str(e)}")
             QMessageBox.critical(self, "Error", f"Calculation failed: {str(e)}")
+    
+    def save_plot_window(self, results_dir):
+        """Save the current plot window state with adjusted figure size"""
+        try:
+            # Reduce figure size (original was 14, 16)
+            fig = plt.figure(figsize=(10, 12))
+            
+            # Create GridSpec with smaller spacing between subplots
+            gs = fig.add_gridspec(6, 1, height_ratios=[1, 1, 1, 1, 1, 1], hspace=0.15)
+            
+            # Get the boundaries
+            region_bounds = self.regions[0].getRegion()
+            upstream_start = self.movable_line_start.value()
+            upstream_end = self.movable_line_end.value()
+            
+            # Get data
+            data = self.data_manager.load_data()
+            if not data:
+                raise ValueError("No data available for plotting")
+    
+            # Get time data and validate
+            time = data.get('time', [])
+            if len(time) == 0:
+                time = np.arange(len(next(iter(data.values()))))
+    
+            # Set time limits for x-axis
+            time_min = np.min(time) if len(time) > 0 else region_bounds[0] - 1
+            time_max = np.max(time) if len(time) > 0 else region_bounds[1] + 1
+    
+            # Loop through plots
+            for i in range(6):
+                # Create subplot using GridSpec
+                ax = fig.add_subplot(gs[i])
+                ax2 = None
+                
+            # Add twin axis for specific panels
+                if i in [0, 1, 2, 3]:
+                    ax2 = ax.twinx()
+    
+                # Plot data based on panel
+                if i == 0:  # B and dB
+                    if 'B' in data and len(data['B']) > 0:
+                        b_data = np.array(data['B'])
+                        valid_mask = ~np.isnan(b_data)
+                        if np.any(valid_mask):
+                            ax.plot(time[valid_mask], b_data[valid_mask], 'k-', label='B')
+                            ax.set_ylabel('B [nT]')
+                    
+                    if 'B_fluct' in data and len(data['B_fluct']) > 0 and ax2:
+                        b_fluct = np.array(data['B_fluct'])
+                        valid_mask = ~np.isnan(b_fluct)
+                        if np.any(valid_mask):
+                            ax2.plot(time[valid_mask], b_fluct[valid_mask], color='gray', label='dB')
+                            ax2.set_ylabel('dB [nT]')
+    
+                elif i == 1:  # B components
+                    for comp, color, label in zip(['Bx', 'By', 'Bz'], ['r', 'b', 'g'], ['Bx', 'By', 'Bz']):
+                        if comp in data and len(data[comp]) > 0:
+                            comp_data = np.array(data[comp])
+                            valid_mask = ~np.isnan(comp_data)
+                            if np.any(valid_mask):
+                                ax.plot(time[valid_mask], comp_data[valid_mask], color=color, label=label)
+                    ax.set_ylabel('B [nT]')
+    
+                elif i == 2:  # V and Beta
+                    if 'V' in data and len(data['V']) > 0:
+                        v_data = np.array(data['V'])
+                        valid_mask = ~np.isnan(v_data)
+                        if np.any(valid_mask):
+                            ax.plot(time[valid_mask], v_data[valid_mask], 'k-', label='V')
+                            ax.set_ylabel('V [km/s]')
+                    
+                    if 'Beta' in data and len(data['Beta']) > 0 and ax2:
+                        beta_data = np.array(data['Beta'])
+                        valid_mask = ~np.isnan(beta_data)
+                        if np.any(valid_mask):
+                            ax2.plot(time[valid_mask], beta_data[valid_mask], 'b-', label='β')
+                            ax2.set_ylabel('log₂(β)')
+    
+                elif i == 3:  # T and density
+                    if 'T' in data and len(data['T']) > 0:
+                        t_data = np.array(data['T'])
+                        valid_mask = ~np.isnan(t_data)
+                        if np.any(valid_mask):
+                            ax.plot(time[valid_mask], t_data[valid_mask], 'r-', label='T')
+                            ax.set_ylabel('T [K]')
+                    
+                    if 'density' in data and len(data['density']) > 0 and ax2:
+                        n_data = np.array(data['density'])
+                        valid_mask = ~np.isnan(n_data)
+                        if np.any(valid_mask):
+                            ax2.plot(time[valid_mask], n_data[valid_mask], 'b-', label='n')
+                            ax2.set_ylabel('n [cm⁻³]')
+    
+                elif i in [4, 5]:  # GCR plots
+                    gcr_key = 'GCR' if i == 4 else 'GCR_additional'
+                    if gcr_key in data and len(data[gcr_key]) > 0:
+                        gcr_data = np.array(data[gcr_key])
+                        valid_mask = ~np.isnan(gcr_data)
+                        if np.any(valid_mask):
+                            first_valid = gcr_data[np.where(valid_mask)[0][0]]
+                            plot_data = ((gcr_data - first_valid) / first_valid) * 100
+                            ax.plot(time[valid_mask], plot_data[valid_mask], 'ko-', 
+                                   markersize=4, label=gcr_key)
+                    ax.set_ylabel('GCR [%]')
+    
+                # Add ICME boundaries shading
+                ax.axvspan(region_bounds[0], region_bounds[1], alpha=0.2, color='blue', label='ICME')
+                
+                # Add upstream window shading to speed panel
+                if i == 2:
+                    ax.axvspan(upstream_start, upstream_end, alpha=0.2, color='purple', label='Upstream')
+    
+                # Set x-axis limits
+                ax.set_xlim(time_min, time_max)
+                
+                # Add grid
+                ax.grid(True, alpha=0.3, linestyle='--')
+    
+                # Make fonts smaller
+                ax.tick_params(labelsize=8)
+                if ax2:
+                    ax2.tick_params(labelsize=8)
+                ax.yaxis.label.set_size(9)
+                if ax2:
+                    ax2.yaxis.label.set_size(9)
+                
+                # Smaller legend
+                handles1, labels1 = ax.get_legend_handles_labels()
+                if ax2:
+                    handles2, labels2 = ax2.get_legend_handles_labels()
+                    handles = handles1 + handles2
+                    labels = labels1 + labels2
+                else:
+                    handles = handles1
+                    labels = labels1
+                
+                if handles:
+                    ax.legend(handles, labels, loc='upper right', fontsize=7, 
+                             bbox_to_anchor=(1.0, 1.0))
+    
+                # Set x-label for bottom plot only
+                if i == 5:
+                    ax.set_xlabel(f'DOY [{self.data_manager.start_date.year}]', fontsize=9)
+                
+                # Set title for top plot
+                if i == 0:
+                    ax.set_title(f"{self.data_manager.satellite} {self.data_manager.start_date.strftime('%Y/%m/%d')}", 
+                                fontsize=10, pad=3)
+    
+            # Adjust layout with tighter spacing
+            plt.tight_layout(pad=1.0, h_pad=0.5, w_pad=0.5)
+            
+            # Save figure with reduced DPI
+            plt.savefig(os.path.join(results_dir, 'plot_window.png'), 
+                       dpi=200, bbox_inches='tight')
+            plt.close(fig)
+    
+        except Exception as e:
+            logger.error(f"Error saving plot window: {str(e)}")
+            raise
 
-    def create_publication_quality_figure(self, calc_results):
-        """Create a publication-quality matplotlib figure with proper formatting"""
-        # Define colors to match pyqtgraph
-        pen_black = 'black'
-        pen_blue = 'blue'
-        pen_red = 'red'
-        pen_green = 'darkgreen'
-        pen_gray = 'gray'
-    
-        # Create figure with more width for legends
-        fig = plt.figure(figsize=(14, 16))
-        
-        # Configure general style
-        plt.style.use('default')
-        plt.rcParams.update({
-            'font.size': 10,
-            'font.family': 'sans-serif',
-            'mathtext.default': 'regular'
-        })
-    
-        # Get the boundaries
-        region_bounds = self.regions[0].getRegion()
-        upstream_start = self.movable_line_start.value()
-        upstream_end = self.movable_line_end.value()
-        
-        # Check if there's additional GCR data
-        has_additional_gcr = False
-        if self.data_manager.satellite in ['Helios1', 'Helios2', 'SolO']:
-            for item in self.plots[5].items:
-                if isinstance(item, pg.PlotDataItem) and item.getData()[0] is not None:
-                    has_additional_gcr = True
-                    break
-        
-        # Loop through plots
-        for i, plot in enumerate(self.plots, 1):
-            # Create subplot with adjusted size
-            gs = fig.add_gridspec(6, 1)[i-1]
-            ax = fig.add_subplot(gs)
-            ax2 = ax.twinx() if i in [1, 2, 3, 4] else None
-            
-            if i == 1:  # B and dB
-                lines = []
-                labels = []
-                for item in plot.items:
-                    if isinstance(item, pg.PlotDataItem):
-                        x, y = item.getData()
-                        if item.name() == 'B':
-                            line = ax.plot(x, y, color='black', label='$B$')[0]
-                            lines.append(line)
-                            labels.append('$B$')
-                if self.view_boxes[0]:
-                    for item in self.view_boxes[0].addedItems:
-                        if isinstance(item, pg.PlotDataItem):
-                            x, y = item.getData()
-                            line = ax2.plot(x, y, color='gray', label='$dB$')[0]
-                            lines.append(line)
-                            labels.append('$dB$')
-                ax.set_ylabel('$B$ [nT]')
-                ax2.set_ylabel('$dB$ [nT]')
-                
-            elif i == 2:  # B components
-                lines = []
-                labels = []
-                colors = {'Bx': 'red', 'By': 'blue', 'Bz': 'green'}
-                for item in plot.items:
-                    if isinstance(item, pg.PlotDataItem) and item.name() in colors:
-                        x, y = item.getData()
-                        line = ax.plot(x, y, color=colors[item.name()], 
-                                     label=f'$B_{{{item.name()[1]}}}$')[0]
-                        lines.append(line)
-                        labels.append(f'$B_{{{item.name()[1]}}}$')
-                ax.set_ylabel('$B$ [nT]')
-                
-            elif i == 3:  # V and Beta
-                lines = []
-                labels = []
-                for item in plot.items:
-                    if isinstance(item, pg.PlotDataItem):
-                        x, y = item.getData()
-                        if item.name() == 'V':
-                            line = ax.plot(x, y, color='black', label='$V$')[0]
-                            lines.append(line)
-                            labels.append('$V$')
-                if self.view_boxes[2]:
-                    for item in self.view_boxes[2].addedItems:
-                        if isinstance(item, pg.PlotDataItem):
-                            x, y = item.getData()
-                            line = ax2.plot(x, y, color='blue', 
-                                          label='$\log_{2}(\\beta)$')[0]
-                            lines.append(line)
-                            labels.append('$\log_{2}(\\beta)$')
-                ax.set_ylabel('$V$ [km/s]')
-                ax2.set_ylabel('$\log_{2}(\\beta)$')
-                
-            elif i == 4:  # T and density
-                lines = []
-                labels = []
-                for item in plot.items:
-                    if isinstance(item, pg.PlotDataItem):
-                        x, y = item.getData()
-                        if item.name() == 'T':
-                            line = ax.plot(x, y, color='red', label='$T$')[0]
-                            lines.append(line)
-                            labels.append('$T$')
-                        elif item.name() == 'Texp':
-                            line = ax.plot(x, y, color='black', label='$T_{exp}$')[0]
-                            lines.append(line)
-                            labels.append('$T_{exp}$')
-                if self.view_boxes[3]:
-                    for item in self.view_boxes[3].addedItems:
-                        if isinstance(item, pg.PlotDataItem):
-                            x, y = item.getData()
-                            line = ax2.plot(x, y, color='blue', label='$n$')[0]
-                            lines.append(line)
-                            labels.append('$n$')
-                ax.set_ylabel('$T$ [K]')
-                ax2.set_ylabel('$n$ [cm$^{-3}$]')
-                
-            else:  # GCR plots (5 and 6)
-                lines = []
-                labels = []
-                for item in plot.items:
-                    if isinstance(item, pg.PlotDataItem):
-                        x, y = item.getData()
-                        line = ax.plot(x, y, 'ko-', markersize=4, 
-                                     label=item.name() or 'GCR')[0]
-                        lines.append(line)
-                        labels.append(item.name() or 'GCR')
-                ax.set_ylabel('GCR [%]')
-
-            # For B components (i == 2)
-            if i == 2:
-                ax.axhline(y=0, color='black', linestyle='--', alpha=0.3, zorder=0)
-            
-            # For Beta plot (i == 3)
-            elif i == 3:
-                if ax2:  # Make sure secondary axis exists
-                    ax2.axhline(y=0, color='blue', linestyle='--', alpha=0.3, zorder=0)
-            
-            # For GCR plots (i == 5 or i == 6)
-            elif i in [5, 6]:
-                # Optionally add a zero reference line
-                ax.axhline(y=0, color='black', linestyle='--', alpha=0.3, zorder=0)
-    
-            # Add ICME boundaries shading for all panels except the last one when no additional GCR
-            if i != 6 or has_additional_gcr:
-                ax.axvspan(region_bounds[0], region_bounds[1], alpha=0.2, 
-                          color='blue', label='ICME')
-                  
-            # Add grid with improved style
-            ax.grid(True, alpha=0.3, linestyle='--', color='gray')
-            
-            # Improve legend appearance
-            if lines:
-                legend = ax.legend(lines, labels, 
-                                 loc='upper right',
-                                 fontsize='small',
-                                 framealpha=1,
-                                 ncol=2,
-                                 handlelength=1,
-                                 columnspacing=1,
-                                 handletextpad=0.5)
-                legend.get_frame().set_facecolor('white')
-                legend.get_frame().set_edgecolor('black')
-            
-            # Set x-label only for the bottom plot, but maintain DOY ticks for all
-            if i == 6:
-                ax.set_xlabel(f'DOY [{self.data_manager.start_date.year}]')
-    
-            # Title for first subplot only
-            if i == 1:
-                ax.set_title(f"{self.data_manager.satellite} {self.data_manager.start_date.strftime('%Y/%m/%d')}", 
-                            pad=20)
-    
-        # Adjust layout
-        plt.tight_layout(rect=[0.02, 0.02, 0.98, 0.98])
-        
-        return fig
 
     def adjust_dates(self, days):
         """Handle date navigation"""

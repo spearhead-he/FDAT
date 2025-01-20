@@ -1,0 +1,2 @@
+DOY Start,DOY End,vLead,vTrail,BPeak,BAvg,FD_obs
+283.9,285.0,446,379,14.1,11.5,nan

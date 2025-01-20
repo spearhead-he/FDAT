@@ -1,8 +1,0 @@
-# Folders to ignore
-data/
-OUTPUT/
-__pycache__/
-
-# Files to ignore
-*.log
-.DS_Store

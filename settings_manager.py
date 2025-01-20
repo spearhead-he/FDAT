@@ -10,8 +10,7 @@ class SettingsManager:
     def __init__(self):
         self.settings_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'user_settings.json')
         self.default_settings = {
-            'observer_name': '',
-            'analysis_type': 'ForbMod'  # Add default analysis type
+            'observer_name': ''
         }
         self.settings = self.load_settings()
 
@@ -20,12 +19,7 @@ class SettingsManager:
         try:
             if os.path.exists(self.settings_file):
                 with open(self.settings_file, 'r') as f:
-                    settings = json.load(f)
-                    # Ensure all default settings exist
-                    for key, value in self.default_settings.items():
-                        if key not in settings:
-                            settings[key] = value
-                    return settings
+                    return json.load(f)
             return self.default_settings.copy()
         except Exception as e:
             logger.error(f"Error loading settings: {str(e)}")
@@ -46,13 +40,4 @@ class SettingsManager:
     def set_observer_name(self, name):
         """Set and save observer name"""
         self.settings['observer_name'] = name
-        self.save_settings()
-
-    def get_analysis_type(self):
-        """Get stored analysis type"""
-        return self.settings.get('analysis_type', 'ForbMod')
-
-    def set_analysis_type(self, analysis_type):
-        """Set and save analysis type"""
-        self.settings['analysis_type'] = analysis_type
         self.save_settings()

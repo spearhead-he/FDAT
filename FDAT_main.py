@@ -6,8 +6,8 @@ configure_matplotlib()
 
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, 
-    QHBoxLayout, QLabel, QPushButton, QLineEdit, QComboBox,
-    QFrame, QGridLayout, QMessageBox, QSizePolicy, QRadioButton, QButtonGroup
+    QHBoxLayout, QLabel, QPushButton, QLineEdit, 
+    QFrame, QGridLayout, QMessageBox, QSizePolicy
 )
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QFont
@@ -79,40 +79,6 @@ class StartWindow(QMainWindow):
         layout.addWidget(self.analyze_btn)
         
         self.apply_styles()
-    
-
-    def save_analysis_type(self, button):
-        """Save analysis type when radio button changes"""
-        analysis_type = "ForbMod" if button == self.forbmod_radio else "In-situ analysis"
-        self.settings_manager.set_analysis_type(analysis_type)
-    
-        def on_analyze_clicked(self):
-            try:
-                if not self.selected_satellite:
-                    QMessageBox.warning(self, "Warning", "Please select a satellite first.")
-                    return
-                    
-                start_date = datetime.strptime(self.start_date_input.text(), "%Y/%m/%d")
-                end_date = datetime.strptime(self.end_date_input.text(), "%Y/%m/%d")
-                
-                if end_date <= start_date:
-                    QMessageBox.warning(self, "Warning", "End date must be after start date.")
-                    return
-                
-                # Get analysis type from radio buttons
-                analysis_type = "ForbMod" if self.forbmod_radio.isChecked() else "In-situ analysis"
-                
-                self.callback(
-                    self.selected_satellite, 
-                    start_date, 
-                    end_date,
-                    self.observer_input.text(),
-                    analysis_type
-                )
-                
-            except ValueError:
-                QMessageBox.warning(self, "Warning", "Please enter valid dates in YYYY/MM/DD format.")
-
         
     def create_header(self):
         header = QFrame()
@@ -120,61 +86,24 @@ class StartWindow(QMainWindow):
         layout = QVBoxLayout(header)
         
         title = QLabel("ForbMod Analysis Tool")
-        title.setFont(QFont("Arial", 15, QFont.Bold))
+        title.setFont(QFont("Arial", 16, QFont.Bold))
         title.setAlignment(Qt.AlignCenter)
         
         description = QLabel("Analyze ICME/Forbush decrease events")
         description.setAlignment(Qt.AlignCenter)
         
-        # Combined observer and analysis type row
-        input_layout = QHBoxLayout()
-        
-        # Observer part (left side)
+        # Add observer name input
         observer_layout = QHBoxLayout()
         observer_label = QLabel("Observer:")
-        observer_label.setFixedWidth(100)
         self.observer_input = QLineEdit()
         self.observer_input.setText(self.settings_manager.get_observer_name())
         self.observer_input.textChanged.connect(self.save_observer_name)
         observer_layout.addWidget(observer_label)
         observer_layout.addWidget(self.observer_input)
-        input_layout.addLayout(observer_layout, stretch=2)  # Give it more space
         
-        # Add some spacing between observer and radio buttons
-        input_layout.addSpacing(20)
-        
-        # Analysis type part (right side)
-        analysis_layout = QHBoxLayout()
-        analysis_label = QLabel("Analysis type:")
-        self.forbmod_radio = QRadioButton("ForbMod")
-        self.insitu_radio = QRadioButton("Only in-situ")
-        
-        analysis_layout.addWidget(analysis_label)
-        analysis_layout.addWidget(self.forbmod_radio)
-        analysis_layout.addWidget(self.insitu_radio)
-        input_layout.addLayout(analysis_layout, stretch=1)  # Give it less space
-        
-        # Group radio buttons
-        button_group = QButtonGroup(self)
-        button_group.addButton(self.forbmod_radio)
-        button_group.addButton(self.insitu_radio)
-        
-        # Set default based on saved preference
-        saved_type = self.settings_manager.get_analysis_type()
-        if saved_type == "In-situ analysis":
-            self.insitu_radio.setChecked(True)
-        else:
-            self.forbmod_radio.setChecked(True)
-        
-        # Connect radio button changes
-        button_group.buttonClicked.connect(self.save_analysis_type)
-        
-        # Add all components to main layout
         layout.addWidget(title)
         layout.addWidget(description)
-        layout.addLayout(input_layout)
-        layout.addSpacing(10)  # Add some space at the bottom
-        
+        layout.addLayout(observer_layout)
         return header
 
     def save_observer_name(self):
@@ -330,18 +259,16 @@ class ForbModApp:
         self.start_window = None
         self.plot_window = None
         self.observer_name = None
-        self.analysis_type = None
         self.show_start_window()
         
     def show_start_window(self):
         self.start_window = StartWindow(callback=self.on_start_window_complete)
         self.start_window.show()
         
-    def on_start_window_complete(self, satellite, start_date, end_date, observer_name, analysis_type=None):
+    def on_start_window_complete(self, satellite, start_date, end_date, observer_name):
         try:
             logger.info(f"Processing start window completion for {satellite}")
             self.observer_name = observer_name
-            self.analysis_type = analysis_type if analysis_type else "ForbMod"  # Default to ForbMod if not provided
             
             # Set initial parameters including directory creation
             self.data_manager.set_initial_params(satellite, start_date, end_date, observer_name)
@@ -355,15 +282,14 @@ class ForbModApp:
             logger.error(f"Error in start window completion: {str(e)}")
             QMessageBox.critical(self.start_window, "Error", 
                                f"Failed to process selection: {str(e)}")
-                
+            
     def show_plot_window(self):
         try:
             self.plot_window = PlotWindow(
                 self.data_manager,
                 observer_name=self.observer_name,
                 on_calculate=self.on_plot_window_calculate,
-                on_dates_changed=self.on_dates_changed,
-                analysis_type=self.analysis_type
+                on_dates_changed=self.on_dates_changed
             )
             self.plot_window.show()
         except Exception as e:
@@ -389,6 +315,7 @@ class ForbModApp:
             logger.error(f"Error changing dates: {str(e)}")
             QMessageBox.critical(self.plot_window, "Error", 
                                "Failed to update dates")
+
 def main():
     try:
         app = QApplication(sys.argv)

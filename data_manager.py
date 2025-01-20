@@ -89,7 +89,6 @@ class DataManager:
     
             # Get first valid coordinates for Helios/SolO
             if self.satellite in ['Helios1', 'Helios2', 'SolO']:
-                self.distance = np.nan
                 # Find first valid distance and angles
                 if 'R' in ip_data:
                     valid_dist = [x for x in ip_data['R'] if not np.isnan(x)]
@@ -306,6 +305,8 @@ class DataManager:
                         logger.error(f"Length mismatch for minute data {key}: {length} != {minute_len}")
                         return False
 
+    
+            print("Data validation passed")
             return True
                 
         except Exception as e:
@@ -336,16 +337,12 @@ class DataManager:
             logger.error(f"Error getting data for key {key}: {str(e)}")
             return None
 
-    def create_output_directory(self, fit_type=None, use_date=None):
+    def create_output_directory(self, fit_type=None):
         """Create and return path for specific fit type"""
         try:
             fit_type = fit_type or self.fit_type or 'test'
-            
-            # Use provided date or default to start_date
-            date_to_use = use_date if use_date is not None else self.start_date
-            
             # Create directory name with underscores
-            date_str = date_to_use.strftime('%Y_%m_%d')
+            date_str = self.start_date.strftime('%Y_%m_%d')
             
             base_dir = os.path.join(
                 os.path.dirname(os.path.abspath(__file__)),
@@ -355,6 +352,7 @@ class DataManager:
             )
             
             fit_dir = os.path.join(base_dir, fit_type.lower())
+            os.makedirs(fit_dir, exist_ok=True)
             logger.debug(f"Created fit directory: {fit_dir}")
             return fit_dir
                 
