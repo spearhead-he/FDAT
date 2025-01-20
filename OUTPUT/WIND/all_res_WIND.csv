@@ -1,2 +1,0 @@
-id,year,date,sat,detector,dist [AU],clong,clat,borders,DOY Start,DOY End,DOY FDmin,vAvg [km/s],vMedian,vStdev,vLead,v_center,vTrail,upstream_w,BPeak [nT],BAvg,BMedian,BStdev,FD_obs [%],FD_bestfit,MSE,fit type
-FD_WIND_EPHIN_F_CHIKUNOVA_1997_10_10_Test,1997,10/10/1997,WIND,EPHIN_F,1,0,0,Test,283.9,285,nan,410.6,406.9,20.8,446,393,379,421,14.1,11.5,11.8,1.5,nan,nan,nan,
