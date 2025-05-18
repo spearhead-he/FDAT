@@ -2,8 +2,6 @@
 
 A graphical interface tool for analyzing Forbush decrease and Interplanetary Coronal Mass Ejection (ICME) events, conducting [ForbMod](https://dx.doi.org/10.3847/1538-4357/aac2de) best-fit calculations on selected data regions and performing in-situ analysis of ICMEs.
 
-> ⚠️ **Note:** This repository currently contains only the ICME analysis functionality (without GCR data) ⚠️
-
 ## Features
 
 FDAT enables to:
@@ -27,8 +25,7 @@ FDAT enables to:
 - Pandas ≥ 2.0.0
 - PyQt5 ≥ 5.15.0
 - pyqtgraph ≥ 0.13.0
-  only for Lundquist fitting:
-- lmfit 
+- lmfit (only for Lundquist fitting)
 
 ## Installation
 
@@ -49,7 +46,7 @@ Helios1 (1974 - 1985)
 Solar Orbiter (2020 - 2024)
 
 ### Full Dataset
-The complete dataset with available observations (larger archive) can be downloaded from [Google Drive](https://drive.google.com/drive/folders/1RIJbjgvnC_fDRipkUYBjt-U4-dJIAWBz?usp=drive_link).
+The complete dataset with available observations (larger archive) can be downloaded from [Google Drive](https://drive.google.com/drive/folders/1qkgmmhZjM6j2k7IeIFOxNSm9oydV_Yse?usp=drive_link).
 
 1. Download the desired year of observations from the full dataset
 2. Place the downloaded file in the appropriate satellite folder within your FDAT directory
@@ -57,13 +54,17 @@ The complete dataset with available observations (larger archive) can be downloa
 ```
 FDAT/
 └── data/
-    └── IP/
-        ├── ACE/
-        ├── WIND/
-        ├── OMNI/
-        ├── SolO/
-        ├── Helios1/
-        └── Helios2/
+    ├── IP/
+    │   ├── ACE/
+    │   ├── WIND/
+    │   ├── OMNI/
+    │   ├── SolO/
+    └── GCR/
+        ├── EPHIN/          # For ACE, WIND
+        ├── EPHIN_shifted/  # For OMNI
+        ├── nm/             # Neutron monitors
+        └── SolO/
+
 ```        
 
 Currently included satellite data ranges:
@@ -80,6 +81,8 @@ Currently included satellite data ranges:
 ## Version
 
 Current Version: v8.1 (16-05-2025)
+
+More information about GUI functionality find in [readme](https://github.com/spearhead-he/FDAT/tree/main/FDAT_readme.txt) file.
 
 ## Contact
 
