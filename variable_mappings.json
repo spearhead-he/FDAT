@@ -1,0 +1,54 @@
+{
+  "description": "This file maps standard internal variable names to possible patterns found in CDF files",
+  "instructions": "Add your own patterns to the 'user_patterns' section to use custom known variable names in your data files",
+  
+  "default_patterns": {
+    "mf": {
+      "B": ["B", "BTOT", "B_TOTAL", "B_MAG", "BMAG", "|B|", "B_ABS", "F"],
+      "Bx": ["BX", "B_X","BR", "B_R","BX_GSE", "BX_GSM", "BX_RTN", "B_RTN_X"],
+      "By": ["BY", "B_Y", "BT", "B_T","BY_GSE", "BY_GSM", "BY_RTN", "B_RTN_Y"],
+      "Bz": ["BZ", "B_Z", "BN", "B_N","BZ_GSE", "BZ_GSM", "BZ_RTN", "B_RTN_Z"],
+      "dB": ["DB","dB","RMS_SD_B", "B_SIGMA", "B_STD", "B_VAR", "B_STDEV", "B_FLUCT"]
+    },
+    "sw": {
+      "N": ["N", "proton_density", "NP", "DENSITY", "N_proton", "N_P", "DENS", "dens"],
+      "V": ["V", "Vp", "flow_speed", "VSW", "VELOCITY", "SPEED", "V_SW", "VGSM", "VGSE", "V_BULK", "V_MAG"],
+      "Vx": ["VX", "Vx", "V_X", "VR", "V_R","Vp_R", "VX_GSE", "VX_GSM", "VX_RTN", "V_RTN_X"],
+      "Vy": ["VY", "Vy", "V_Y", "VT", "V_T", "Vp_T","VY_GSE", "VY_GSM", "VY_RTN", "V_RTN_Y"],
+      "Vz": ["VZ", "Vz", "V_Z", "VN", "V_N", "Vp_N","VZ_GSE", "VZ_GSM", "VZ_RTN", "V_RTN_Z"],
+      "T": ["T", "TEMP", "TEMPERATURE", "TP", "T_P", "PROTON_TEMP"],
+      "Beta": ["BETA", "PLASMA_BETA", "Beta", "beta"],
+      "T_exp": ["T_EXP", "TEXP", "EXPECTED_TEMP"]
+    },
+    "gcr": {
+      "GCR": ["GCR", "Count_rate","Count_Rate", "COUNT_RATE_F", "FLUX", "COUNTS", "dose", "DoseE_filtered", "D5", "C_H"],
+      "GCR_additional": ["GCR_ADD", "Count_rate","Count_Rate", "COUNT_RATE_F", "FLUX", "COUNTS", "dose", "DoseE_filtered", "CE", "C_L"]
+    },
+    "coords": {
+                "dist": ["RAD_AU", "R", "DIST", "DISTANCE", "RADIUS", "dist"],
+                "clon": ["HG_LON", "CLON", "CLONG", "LONGITUDE", "LON", "LONG", "clong"],
+                "clat": ["HG_LAT", "CLAT", "LATITUDE", "LAT", "clat"]
+    }
+  },
+  
+  "user_patterns": {
+    "mf": {
+      "B": [],
+      "Bx": [],
+      "By": [],
+      "Bz": [],
+      "dB": []
+    },
+    "sw": {
+      "N": [],
+      "V": [],
+      "T": [],
+      "Beta": [],
+      "T_exp": []
+    },
+    "gcr": {
+      "GCR": [],
+      "GCR_additional": []
+    }
+  }
+}

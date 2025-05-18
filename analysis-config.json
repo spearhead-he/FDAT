@@ -1,0 +1,89 @@
+{
+  "analysis_types": {
+    "ForbMod": {
+      "description": "Forbush Decrease Model Analysis",
+      "calculations": [
+	{"data_key": "GCR", "operation": "time_of_min", "result_key": "DOY FDmin"},
+        {"data_key": "V", "operation": "mean", "result_key": "vAvg [km/s]"},
+        {"data_key": "V", "operation": "median", "result_key": "vMedian"},
+        {"data_key": "V", "operation": "stdev", "result_key": "vStdev"},
+        {"data_key": "V", "operation": "lead", "region": "main", "result_key": "vLead"},
+        {"data_key": "V", "operation": "center", "region": "main", "result_key": "v_center"},
+        {"data_key": "V", "operation": "trail", "region": "main", "result_key": "vTrail"},
+        {"data_key": "V", "operation": "mean", "region": "upstream", "result_key": "upstream_w"},
+        {"data_key": "B", "operation": "peak", "result_key": "BPeak [nT]"},
+        {"data_key": "B", "operation": "mean", "result_key": "BAvg"},
+        {"data_key": "B", "operation": "median", "result_key": "BMedian"},
+        {"data_key": "B", "operation": "stdev", "result_key": "BStdev"},
+        {"data_key": "GCR", "operation": "min", "result_key": "FD_obs [%]"}
+        
+      ],
+      "fit_model": "bessel",
+      "output_table": "forbmod_results"
+    },
+    "In-situ analysis": {
+      "description": "In-situ Solar Wind Analysis",
+      "calculations": [
+        {"data_key": "B", "operation": "mean", "result_key": "BAvg"},
+        {"data_key": "B", "operation": "median", "result_key": "BMedian"},
+        {"data_key": "B", "operation": "stdev", "result_key": "BStdev"},
+        {"data_key": "B", "operation": "peak", "result_key": "BPeak"},
+        {"data_key": "dB", "operation": "mean", "result_key": "dBAvg"},
+        {"data_key": "V", "operation": "mean", "result_key": "vAvg"},
+        {"data_key": "V", "operation": "median", "result_key": "vMedian"},
+        {"data_key": "V", "operation": "stdev", "result_key": "vStdev"},
+        {"data_key": "V", "operation": "peak", "result_key": "vPeak"},
+        {"data_key": "V", "operation": "lead", "region": "main", "result_key": "vLead"},
+        {"data_key": "V", "operation": "trail", "region": "main", "result_key": "vTrail"},
+        {"data_key": "V", "operation": "center", "region": "main", "result_key": "v_center"},
+        {"data_key": "V", "operation": "mean", "region": "upstream", "result_key": "upstream_w"}
+      ],
+      "output_table": "insitu_results"
+    },
+    "Sheath analysis": {
+      "description": "Sheath Region Analysis",
+      "calculations": [
+        {"data_key": "B", "operation": "mean", "result_key": "BAvg"},
+        {"data_key": "B", "operation": "median", "result_key": "BMedian"},
+        {"data_key": "B", "operation": "stdev", "result_key": "BStdev"},
+        {"data_key": "V", "operation": "mean", "result_key": "vAvg"},
+        {"data_key": "V", "operation": "median", "result_key": "vMedian"},
+        {"data_key": "V", "operation": "stdev", "result_key": "vStdev"},
+
+        {"data_key": "Bx", "operation": "mean", "result_key": "BxAvg"},
+        {"data_key": "Bx", "operation": "median", "result_key": "BxMedian"},
+        {"data_key": "Bx", "operation": "stdev", "result_key": "BxStdev"},
+        {"data_key": "By", "operation": "mean", "result_key": "ByAvg"},
+        {"data_key": "By", "operation": "median", "result_key": "ByMedian"},
+        {"data_key": "By", "operation": "stdev", "result_key": "ByStdev"},
+        {"data_key": "Bz", "operation": "mean", "result_key": "BzAvg"},
+        {"data_key": "Bz", "operation": "median", "result_key": "BzMedian"},
+        {"data_key": "Bz", "operation": "stdev", "result_key": "BzStdev"},
+
+        {"data_key": "Vx", "operation": "mean", "result_key": "vxAvg"},
+        {"data_key": "Vx", "operation": "median", "result_key": "vxMedian"},
+        {"data_key": "Vx", "operation": "stdev", "result_key": "vxStdev"},
+        {"data_key": "Vy", "operation": "mean", "result_key": "vyAvg"},
+        {"data_key": "Vy", "operation": "median", "result_key": "vyMedian"},
+        {"data_key": "Vy", "operation": "stdev", "result_key": "vyStdev"},
+        {"data_key": "Vz", "operation": "mean", "result_key": "vzAvg"},
+        {"data_key": "Vz", "operation": "median", "result_key": "vzMedian"},
+        {"data_key": "Vz", "operation": "stdev", "result_key": "vzStdev"},
+
+
+        {"data_key": "N", "operation": "mean", "result_key": "NAvg"},
+        {"data_key": "N", "operation": "median", "result_key": "NMedian"},
+        {"data_key": "N", "operation": "stdev", "result_key": "NStdev"},
+        {"data_key": "Beta", "operation": "mean", "result_key": "BetaAvg"},
+        {"data_key": "Beta", "operation": "median", "result_key": "BetaMedian"},
+        {"data_key": "Beta", "operation": "stdev", "result_key": "BetaStdev"},
+        {"data_key": "T", "operation": "mean", "result_key": "TAvg"},
+        {"data_key": "T", "operation": "median", "result_key": "TMedian"},
+        {"data_key": "T", "operation": "stdev", "result_key": "TStdev"}
+
+      ],
+      "fit_model": "lundquist",
+      "output_table": "sheath_results"
+    }
+  }
+}

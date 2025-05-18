@@ -1,0 +1,79 @@
+{
+  "description": "This file contains satellite-specific mappings",
+  "instructions": "Update this configuration for new satellites or custom data sources",
+  
+  "satellites": {
+    "ACE": {
+      "detector": "EPHIN_F",
+      "secondary_detector": "nm SoPo",
+      "ip_data_source": "ACE",
+      "gcr_directory": "EPHIN",
+      "secondary_gcr_directory": "nm",
+      "date_range": "Sep 1997 - Dec 2022"
+    },
+    "WIND": {
+      "detector": "EPHIN_F",
+      "secondary_detector": "nm SoPo",
+      "ip_data_source": "WIND",
+      "gcr_directory": "EPHIN",
+      "secondary_gcr_directory": "nm",
+      "date_range": "Nov 1994 - Sep 2024"
+    },
+    "Helios1": {
+      "detector": "E6_D5",
+      "secondary_detector": "E6_CE",
+      "ip_data_source": "Helios1",
+      "gcr_directory": "Helios1",
+      "secondary_gcr_directory": "Helios2",
+      "date_range": "Dec 1974 - Jun 1981"
+    },
+    "Helios2": {
+      "detector": "E6_D5",
+      "secondary_detector": "E6_CE",
+      "ip_data_source": "Helios2",
+      "gcr_directory": "Helios2",
+      "secondary_gcr_directory": "Helios2",
+      "date_range": "Jan 1976 - Mar 1980"
+    },
+    "OMNI": {
+      "detector": "EPHIN_F_shift",
+      "secondary_detector": "nm SoPo",
+      "ip_data_source": "OMNI",
+      "gcr_directory": "EPHIN_shifted",
+      "secondary_gcr_directory": "nm",
+      "date_range": "Jan 1998 - Dec 2024"
+    },
+    "SolO": {
+      "detector": "HET C_H",
+      "secondary_detector": "HET C_L",
+      "ip_data_source": "SolO",
+      "gcr_directory": "SolO",
+      "secondary_gcr_directory": "SolO",
+      "date_range": "Apr 2020 - Jul 2024"
+    },
+    "Ulysses": {
+      "detector": "KET",
+      "secondary_detector": null,
+      "ip_data_source": "Ulysses",
+      "gcr_directory": "Ulysses",
+      "secondary_gcr_directory": null,
+      "date_range": "Nov 1990 - Jul 2009"
+    },
+    "neutron monitors": {
+      "detector": "SoPo",
+      "secondary_detector": "EPHIN_F_shift",
+      "ip_data_source": "OMNI",
+      "gcr_directory": "nm",
+      "secondary_gcr_directory": "EPHIN_shifted",
+      "date_range": "Jan 1998 - Dec 2024"
+    },
+    "MAVEN": {
+      "detector": "MSL_RAD",
+      "secondary_detector": null,
+      "ip_data_source": "MAVEN",
+      "gcr_directory": "MSL_RAD",
+      "secondary_gcr_directory": null,
+      "date_range": "Dec 2014 - Dec 2023"
+    }
+  }
+}

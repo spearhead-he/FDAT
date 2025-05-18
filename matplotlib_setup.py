@@ -1,13 +1,14 @@
 import matplotlib
 import logging
+import os
 
 def configure_matplotlib():
     """Configure matplotlib settings to avoid warnings and optimize for Qt"""
     # Use Qt5 backend
     matplotlib.use('Qt5Agg')
     
-    # Disable font-related warnings
-    logging.getLogger('matplotlib.font_manager').setLevel(logging.ERROR)
+    # Disable font-related warnings completely
+    logging.getLogger('matplotlib.font_manager').disabled = True
     
     # Configure matplotlib rcParams
     matplotlib.rcParams.update({
@@ -26,7 +27,7 @@ def configure_matplotlib():
         
         # Configure grid
         'grid.linestyle': '--',
-        'grid.alpha': 0.5,
+        'grid.alpha': 0.3,
         
         # Configure ticks
         'xtick.direction': 'out',
@@ -39,3 +40,6 @@ def configure_matplotlib():
         # Disable toolbar
         'toolbar': 'None'
     })
+    
+    # Suppress leapseconds warning
+    os.environ['SPACEPY_LEAPSECS_WARN'] = 'False'

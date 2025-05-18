@@ -8,5 +8,10 @@ scikit-learn
 PyQt5
 pyqtgraph
 
-# Data manipulation and analysis
+# Data loading and analysis
 pandas
+spacepy
+xarray
+
+# For fits
+lmfit

@@ -1,121 +1,163 @@
-********************************************************************************************
-FDAT - Forbush Decrease Analysis Tool
-********************************************************************************************
+# FDAT - Forbush Decrease Analysis Tool
 
-A graphical user interface tool for analyzing Forbush decrease and ICME events, performing basic in-situ analysis of ICMEs/flux ropes, and 
-conducting ForbMod best-fit calculations on selected data regions.
+A graphical user interface tool for analyzing Forbush decrease and ICME events.
 
-====================================
-OVERVIEW
-====================================
+## OVERVIEW
 
-ForbMod GUI enables to:
+FDAT enables:
 
-- Plot and analyze ICME/Forbush decrease events
-- Select borders of ICME events and related Forbush decreases
-- Perform in-situ analysis of ICMEs
-- Execute ForbMod best-fit procedures on selected events
-- Generate comprehensive analysis outputs and visualizations
+- Plotting and analyzing ICME/Forbush decrease events
+- Selecting boundaries for ICME events and related Forbush decreases
+- Executing ForbMod best-fit procedures on selected events
+- Performing in-situ analysis of ICMEs
+- Analyzing sheath regions with support for front region separation
+- Conducting Lundquist flux rope fitting for magnetic obstacles
+- Exporting mf/sw/gcr data for a chosen range of time
 
-====================================
-INSTALLATION
-====================================
 
-Prerequisites:
--------------
+## INSTALLATION
+
+### Prerequisites:
 - Python 3.10.6 or later
-- Operating System: Tested on Windows, macOS, should work on Linux
+- Operating System: Tested on Windows, macOS, Linux
 
-Core Scientific Libraries:
+### Core Libraries:
+```
+numpy
+scipy
+spacepy
+xarray
+matplotlib
+scikit-learn
+mpmath
+pandas
+PyQt5
+pyqtgraph
 
-numpy>=1.24.0 (array operations, calculations)
-scipy>=1.10.0 (scientific computations)
-matplotlib>=3.7.0 (plotting)
-scikit-learn>=1.2.0 (data analysis)
-mpmath>=1.3.0 (mathematical functions)
-pandas>=2.0.0 (data manipulation)
+lmfit
+```
 
-GUI Libraries:
-
-PyQt5>=5.15.0 (main GUI framework)
-pyqtgraph>=0.13.0 (fast plotting)
-
-Additional Libraries:
-
-python-dateutil>=2.8.0 (date handling)
-setuptools>=65.5.1 (package management)
-wheel>=0.38.0 (package management)
-
-Optional Development Tools:
-
-pytest>=7.0.0 (testing)
-flake8>=6.0.0 (code quality)
-black>=22.0.0 (code formatting)
-
-
-
-Installation Steps:
------------------
+### Installation Steps:
 1. Install required packages:
+   ```
    python3 -m pip install --upgrade pip setuptools
    pip3 install -r requirements.txt
+   ```
 
-2. Navigate to ForbMod directory and run:
+2. Navigate to FDAT directory and run:
+   ```
    python3 FDAT_main.py
+   ```
 
-====================================
-USAGE
-====================================
+## USAGE
 
-Application Workflow:
--------------------
+### Application Workflow:
 
-Window 1 (Start Window):
+**Window 1 (Start Window):**
 - Enter start and end dates
 - Select satellite source
-- Input observer name (will be saved in the events ID)
+- Input observer name
+- Choose analysis type (ForbMod, In-situ, or Sheath)
 
-Window 2 (Plot Window):
-- View magnetic field, solar wind and GCR data
-- Adjust borders for analysis region
-- Adjust range for the upstream solar wind speed calculation window
-- Select fit type from dropdown (inner, extended, optimal or test)
-- Click "Calculate" to initiate analysis
+**Window 2 (Plot Window):**
+- View magnetic field, solar wind and GCR data, as well as satellite coordinates
+- Adjust boundaries for analysis regions
+- Select fit type from dropdown (for ForbMod/In-situ analyses)
+- Select upstream, sheath+front region, MO borders for Sheath region analysis
+- Click "Calculate"/"Save" to initiate analysis
 
-Window 3 (Fit Window):
+**Window 3 (Fit Window - for ForbMod):**
 - Review selected FD data and best-fit function
 - Choose fit type characteristics
-- Save analysis results, including screenshots, ICME& FD parameters
+- Save analysis results
 
-====================================
-OUTPUT FILES
-====================================
+**Window 3 (Lundquist parameters - for Sheath region analysis):**
+- Put the initial guess parameters to run the fitting function
+
+## OUTPUT FILES
 
 Analysis results are saved as:
 
-best_fit.jpg        = Image showing selected data and best-fit function
-bestfit_data.txt    = Selected FD vs r data
-bestfit_results.txt = Best-fit FD amplitude and MSE values
-insitu_results.txt  = DOY start/end, vLead, vTrail, BPeak, BAvg, FD_obs
-bestfit_function.txt = Best-fit FD function vs r
-plot_window.png     = Screenshot of analysis window with chosen borders
-all_res_{satellite}.csv = all ICME, FD, fit parameters for each event in one table
+- **ForbMod Analysis:**
+  - best_fit.jpg - Image showing selected data and best-fit function
+  - bestfit_data.txt - Selected FD curve in normalized space
+  - bestfit_results.txt - Best-fit FD amplitude and MSE values
+  - insitu_results.txt - insitu parameters for statistics
+  - Export figure with ICME region
+  - CSV with all calculated parameters
 
-====================================
-DATA SOURCES
-====================================
+- **In-situ Analysis:**
+  - Export figure with ICME region
+  - CSV with calculated parameters
+
+- **Sheath Analysis:**
+  - Export figure with selected regions
+  - CSV with calculated parameters for each region
+  - Lundquist fit results for MO region (when performed)
+
+## MISSIONS
 
 Supported satellite MF&SW data sources and periods:
 - Solar Orbiter: Apr 2020 - Jul 2024
-- OMNI: Jan 2007 - Dec 2019
+- OMNI: Jan 1998 - Dec 2024
 - ACE: Sep 1997 - Dec 2022
 - WIND: Nov 1994 - Sep 2024
-- Helios2: Jan 1976 - Mar 1980
 - Helios1: Dec 1974 - Jun 1981
+- Helios2: Jan 1976 - Mar 1980
+- MAVEN: Dec 2014 - Dec 2023
+- Ulysses: Nov 1990 - Jul 2009
+- Neutron monitors (SoPo): Jan 1998 - Dec 2024
 
-====================================
-VERSION HISTORY
-====================================
+## DESCRIPTION OF FILES
+
+FDAT_main.py - Main application file. Initializes the app, creates the start window, and manages application flow.
+cdf_data_manager.py - Manages loading and processing of CDF data files. Handles data caching and time range filtering.
+plot_window.py - Handles the main data visualization window. Contains plotting logic, region selection, and analysis controls.
+calculations.py - Contains scientific calculation functions for different analysis types (ForbMod, In-situ, Sheath).
+fit_window.py - Displays Forbush decrease fitting results, allows users to add metadata and save analysis.
+output_handler.py - Manages saving results, figures, and CSV files to the OUTPUT directory.
+data_exporter.py - Functionality for the data export button.
+
+settings_manager.py - Handles user preferences and window states, saving to JSON.
+utils.py - Handles UI scaling and geometry.
+icon.py - Manages the application icon.
+matplotlib_setup.py - Configures matplotlib settings for optimized plots.
+
+lundquist/lundquist_dialog.py - Dialog for setting Lundquist flux rope fitting parameters.
+lundquist/lundquist_connector.py - Integration between Lundquist fitting and the main GUI.
+lundquist/lundquist_fit.py - Implementation of the Lundquist fitting algorithm, including model calculations.
+lundquist/init.py - Package initialization file for the lundquist module.
+
+analysis-config.json - Defines calculations to perform, result keys, and output tables for each analysis type (ForbMod, In-situ, Sheath).
+satellite_mappings.json - Maps satellite names to their associated detectors, ip data sources, directories.
+variable_mappings.json - Defines patterns between standard variable names and the actual variable names found in CDF files. 
+user_settings.json - Stores user preferences including observer, analysis type, and window geometry information. 
+
+icon8.svg - app icon
+FDAT.log - log file
+
+
+## VERSION HISTORY
+
+v8.1 (16-05-2025) - G.Chikunova:
+- Added Lundquist fit functionality
+- Added data export button
+
+v8.0 (29-04-2025) - G.Chikunova:
+- Made GUI to use CDF data files 
+- Optimized functions to work with datetime format
+- Calculation of expected Temperature for different distances in heliosphere
+- Added sheath analysis mode with upstream/sheath/MO regions
+- Multi-year data display with continuous DOY
+
+v7.3 (28-02-2025) - G.Chikunova:
+Window size persistence, DPI scaling adaptation
+v7.2 (10-02-2025) - G.Chikunova:
+UI improvements, export fixes
+v7.1 (04-02-2025) - G.Chikunova:
+JSON settings persistence, secondary GCR channel
+v7.0 (20-01-2025) - G.Chikunova:
+Export updates, analysis type selection
 v6 (12-11-2024) - G.Chikunova
 v5 (16-09-2024) - G.Chikunova
 v4 (09-06-2024) - G.Chikunova
@@ -123,17 +165,8 @@ v3 (13-03-2024) - M. Dumbovic
 v2 (11-12-2022) - M. Dumbovic
 v1 (17-10-2022) - L. Kramaric
 
-====================================
-KNOWN LIMITATIONS
-====================================
 
-- Only works for time spans where data is available in the GUI
-
-====================================
-CONTACT
-====================================
+## CONTACT
 
 For questions and support, contact:
-G.Chikunova (galina.chikunova@geof.hr)
-
-********************************************************************************************
+M.Dumbovic (mateja.dumbovic@geof.unizg.hr)
