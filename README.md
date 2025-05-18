@@ -87,5 +87,7 @@ More information about GUI functionality find in [readme](https://github.com/spe
 ## Contact
 
 For questions and support:  
+
 M.Dumbovic (mateja.dumbovic@geof.unizg.hr)
+
 G. Chikunova (galina.chikunova@geof.unizg.hr)
