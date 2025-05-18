@@ -39,7 +39,7 @@ python3 FDAT_main.py
 ### Example data
 The repository [/data/IP](https://github.com/spearhead-he/FDAT/tree/main/data/IP) includes example CDF files for ICMEs from:
 
-Wind (1994 - 1997)
+Wind (1995 - 1997)
 
 Helios1 (1974 - 1985)
 
