@@ -428,6 +428,11 @@ class PlotWindow(QMainWindow):
                             angle=0,
                             pen=pg.mkPen(color=(0,0,0), width=1, style=Qt.DashLine)
                         ))
+
+                    else:
+                        self.setup_axis(plot, 'left', 'n', 'cm⁻³', 'black')
+                        self.setup_axis(plot, 'right', 'T', '10⁵ K', 'red')
+                        
     
                 # Panel 5: Different for Sheath vs ForbMod/Insitu
                 elif i == 4:
