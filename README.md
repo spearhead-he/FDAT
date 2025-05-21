@@ -29,12 +29,12 @@ FDAT enables to:
 
 ## Installation
 
-1. This tool requires a recent Python (>=3.10) installation. [We recommend installing Python via miniforge/conda-forge.](https://conda-forge.org/download/)
+1. This tool requires a recent Python (>=3.10) installation. [We recommend installing Python via miniforge.](https://conda-forge.org/download/)
 2. [Download this file](https://github.com/spearhead-he/FDAT/archive/refs/heads/main.zip) and extract to a folder of your choice (or clone the repository [https://github.com/spearhead-he/FDAT](https://github.com/spearhead-he/FDAT) if you know how to use `git`).
 3. Open a terminal or the miniforge prompt and move to the directory extracted in step 2.
 4. Create a new virtual environment (e.g., `conda create --name fdat python=3.12`) and activate it (e.g., `conda activate fdat`).
 5. Install the Python dependencies from the *requirements.txt* file with `pip install -r requirements.txt` within the virtual environment.
-6. Start the tool by running `python3 FDAT_main.py`
+6. Start the tool by running `python FDAT_main.py`
 
 ## Data Usage Instructions
 ### Example data
