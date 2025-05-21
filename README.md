@@ -29,12 +29,23 @@ FDAT enables to:
 
 ## Installation
 
-1. This tool requires a recent Python (>=3.10) installation. [We recommend installing Python via miniforge.](https://conda-forge.org/download/)
-2. [Download this file](https://github.com/spearhead-he/FDAT/archive/refs/heads/main.zip) and extract to a folder of your choice (or clone the repository [https://github.com/spearhead-he/FDAT](https://github.com/spearhead-he/FDAT) if you know how to use `git`).
-3. Open a terminal or the miniforge prompt and move to the directory extracted in step 2.
-4. Create a new virtual environment (e.g., `conda create --name fdat python=3.12`) and activate it (e.g., `conda activate fdat`).
-5. Install the Python dependencies from the *requirements.txt* file with `pip install -r requirements.txt` within the virtual environment.
-6. Start the tool by running `python FDAT_main.py`
+1. This tool requires a recent Python (>=3.10) installation. [We recommend installing Python via miniforge](https://conda-forge.org/download/) (this will give you the same `conda` command as if installing Anaconda).
+2. [Download this file](https://github.com/spearhead-he/FDAT/archive/refs/heads/main.zip) and extract to a folder of your choice. (Or clone the repository [https://github.com/spearhead-he/FDAT](https://github.com/spearhead-he/FDAT) with `git`).
+3. Open a terminal or miniforge prompt and move to the directory extracted in step 2.
+4. Create a new conda environment with all required dependencies by running:
+   ```
+   conda env create -f environment.yml
+   ```
+
+### Running
+
+1. Open a terminal or miniforge prompt and move to the directory created in [Installation](https://github.com/jgieseler/FDAT#installation) step 2.
+2. Activate the newly created environment with:
+   ```
+   conda activate fdat
+   ```
+3. Start the tool by running `python FDAT_main.py`
+
 
 ## Data Usage Instructions
 ### Example data
