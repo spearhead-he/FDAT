@@ -1,0 +1,17 @@
+name: fdat
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - lmfit
+  - matplotlib
+  - numpy
+  - pandas
+  - pyqt
+  - pyqtgraph
+  - scipy
+  - scikit-learn
+  - xarray
+  - pip
+  - pip:
+    - spacepy

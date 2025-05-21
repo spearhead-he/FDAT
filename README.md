@@ -29,11 +29,25 @@ FDAT enables to:
 
 ## Installation
 
-```bash
-python3 -m pip install --upgrade pip setuptools
-pip3 install -r requirements.txt
-python3 FDAT_main.py
-```
+1. This tool requires a recent Python (>=3.10) installation. [We recommend installing Python via miniforge](https://conda-forge.org/download/) (this will give you the same `conda` command as if installing Anaconda).
+2. [Download this file](https://github.com/spearhead-he/FDAT/archive/refs/heads/main.zip) and extract to a folder of your choice. (Or clone the repository [https://github.com/spearhead-he/FDAT](https://github.com/spearhead-he/FDAT) with `git`).
+3. Open a terminal or miniforge prompt and move to the directory created in step 2.
+4. Create a new conda environment with all required dependencies by running:
+   ```
+   conda env create -f environment.yml
+   ```
+
+Note: If you already have a conda environment with the name `fdat`, step 4 will fail with an error. In this case, open the file `environment.yml` with a text editor and replace `fdat` in the first line with a different name (e.g., `fdat2`). Afterwards, do step 4 above again. You also need to use this new name in step 2 of [Running](https://github.com/jgieseler/FDAT#running) below! 
+
+### Running
+
+1. Open a terminal or miniforge prompt and move to the directory created in [Installation](https://github.com/jgieseler/FDAT#installation) step 2.
+2. Activate the newly created environment with:
+   ```
+   conda activate fdat
+   ```
+3. Start the tool by running `python FDAT_main.py`
+
 
 ## Data Usage Instructions
 ### Example data
