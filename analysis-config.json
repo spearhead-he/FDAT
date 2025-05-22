@@ -84,6 +84,26 @@
       ],
       "fit_model": "lundquist",
       "output_table": "sheath_results"
-    }
+    },
+"Lundquist fit": {
+  "description": "Lundquist Flux Rope Fit Analysis", 
+  "calculations": [
+    {"data_key": "B", "operation": "mean", "result_key": "BAvg"},
+    {"data_key": "B", "operation": "median", "result_key": "BMedian"},
+    {"data_key": "B", "operation": "stdev", "result_key": "BStdev"},
+    {"data_key": "B", "operation": "peak", "result_key": "BPeak"},
+    {"data_key": "dB", "operation": "mean", "result_key": "dBAvg"},
+    {"data_key": "V", "operation": "mean", "result_key": "vAvg"},
+    {"data_key": "V", "operation": "median", "result_key": "vMedian"},
+    {"data_key": "V", "operation": "stdev", "result_key": "vStdev"},
+    {"data_key": "V", "operation": "peak", "result_key": "vPeak"},
+    {"data_key": "V", "operation": "lead", "region": "main", "result_key": "vLead"},
+    {"data_key": "V", "operation": "trail", "region": "main", "result_key": "vTrail"},
+    {"data_key": "V", "operation": "center", "region": "main", "result_key": "v_center"},
+    {"data_key": "V", "operation": "mean", "region": "upstream", "result_key": "upstream_w"}
+  ],
+  "fit_model": "lundquist",
+  "output_table": "lundquist_results"
+}
   }
 }

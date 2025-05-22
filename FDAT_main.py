@@ -214,30 +214,41 @@ class StartWindow(QMainWindow):
         
         self.forbmod_radio = QRadioButton("ForbMod")
         self.insitu_radio = QRadioButton("In-situ")
-        self.sheath_radio = QRadioButton("Sheath")  # New radio button
+        self.sheath_radio = QRadioButton("Sheath")  
+        self.lundquist_radio = QRadioButton("Lundquist fit") 
+
+           
+    
+
+
         
         self.forbmod_radio.setFont(self.window_manager.get_sized_font('normal'))
         self.insitu_radio.setFont(self.window_manager.get_sized_font('normal'))
         self.sheath_radio.setFont(self.window_manager.get_sized_font('normal'))
+        self.lundquist_radio.setFont(self.window_manager.get_sized_font('normal'))
         
         analysis_layout.addWidget(analysis_label)
         analysis_layout.addWidget(self.forbmod_radio)
         analysis_layout.addWidget(self.insitu_radio)
-        analysis_layout.addWidget(self.sheath_radio)  # Add to layout
+        analysis_layout.addWidget(self.sheath_radio) 
+        analysis_layout.addWidget(self.lundquist_radio)  
         input_layout.addLayout(analysis_layout, stretch=1)  
         
         # Group radio buttons
         button_group = QButtonGroup(self)
         button_group.addButton(self.forbmod_radio)
         button_group.addButton(self.insitu_radio)
-        button_group.addButton(self.sheath_radio)  # Add to button group
+        button_group.addButton(self.sheath_radio)  
+        button_group.addButton(self.lundquist_radio) 
         
         # Set default based on saved preference
         saved_type = self.settings_manager.get_analysis_type()
         if saved_type == "In-situ analysis":
             self.insitu_radio.setChecked(True)
-        elif saved_type == "Sheath analysis":  # Handle sheath analysis preference
+        elif saved_type == "Sheath analysis":  
             self.sheath_radio.setChecked(True)
+        elif saved_type == "Lundquist fit":
+            self.lundquist_radio.setChecked(True)
         else:
             self.forbmod_radio.setChecked(True)
         
@@ -485,6 +496,8 @@ class StartWindow(QMainWindow):
                 analysis_type = "In-situ analysis"
             elif self.sheath_radio.isChecked():
                 analysis_type = "Sheath analysis"
+            elif self.lundquist_radio.isChecked():
+                analysis_type = "Lundquist fit"
             else:
                 analysis_type = "ForbMod"
             

@@ -358,7 +358,7 @@ class PlotWindow(QMainWindow):
         """Set up labels for all plots with colors based on analysis type"""
         try:
             # Sheath analysis has a different panel configuration than ForbMod/Insitu
-            is_sheath = (self.analysis_type == "Sheath analysis")
+            is_sheath = (self.get_ui_analysis_type() == "Sheath analysis")
             
             for i, plot in enumerate(self.plots):
                 # Panel 1: B and dB (same for all analysis types)
@@ -964,7 +964,7 @@ class PlotWindow(QMainWindow):
             gcr_gap_duration = max_gap_durations['gcr']
             
             # Determine analysis type
-            is_sheath = (self.analysis_type == "Sheath analysis")
+            is_sheath = (self.get_ui_analysis_type() == "Sheath analysis")
             
             # PANEL 1: B and dB (same for all analysis types)
             if 'time' in mf_data:
@@ -2009,6 +2009,70 @@ class PlotWindow(QMainWindow):
                     except Exception as e:
                         logger.error(f"Error saving in-situ analysis: {str(e)}")
                         QMessageBox.critical(self, "Error", f"Failed to save in-situ analysis: {str(e)}")
+
+
+                elif self.analysis_type == "Lundquist fit":
+                    # Handle Lundquist fit analysis - identical to In-situ but with fitting
+                    try:
+                        # Create lundquist_analysis directory
+                        lundquist_dir = os.path.join(
+                            self.script_directory,
+                            'OUTPUT',
+                            self.data_manager.satellite,
+                            'lundquist_analysis',
+                            event_date.strftime('%Y_%m_%d') 
+                        )
+                        os.makedirs(lundquist_dir, exist_ok=True)
+                        
+                        # Add analysis type to calc_results
+                        calc_results['analysis_type'] = "Lundquist fit"
+                        
+                        # Create output handler
+                        output_handler = OutputHandler(lundquist_dir, self.script_directory)
+                        
+                        # Save export figure
+                        fig_path = output_handler.save_publication_figure(
+                            fig, 
+                            self.data_manager.satellite,
+                            event_date,
+                            "Lundquist fit",
+                            current_fit_type.lower()
+                        )
+                        
+                        # Perform Lundquist fit
+                        try:
+                            from lundquist.lundquist_dialog import LundquistParamDialog
+                            from lundquist import lundquist_connector
+                            
+                            param_dialog = LundquistParamDialog(self)
+                            if param_dialog.exec_():
+                                # Get parameters and pass them to avoid second dialog
+                                parameters = param_dialog.get_parameters()
+                                lundquist_connector.run_lundquist_fit_from_gui(
+                                    self, self.data_manager, self.region_datetime, lundquist_dir, parameters  # Pass parameters!
+                                )
+                            else:
+                                # User cancelled dialog
+                                return
+                        except Exception as e:
+                            logger.error(f"Error performing Lundquist fit: {str(e)}")
+                            return
+                        
+                        # Update CSV file
+                        output_handler.update_results_csv(
+                            sat=self.data_manager.satellite,
+                            detector=self.data_manager.detector,
+                            observer=self.observer_name,
+                            calc_results=calc_results,
+                            day=event_date.strftime('%Y/%m/%d'),
+                            fit_type=current_fit_type.lower()
+                        )
+                        
+                        QMessageBox.information(self, "Success", 
+                                              f"Lundquist fit analysis results saved to {lundquist_dir}")
+                    except Exception as e:
+                        logger.error(f"Error saving Lundquist fit analysis: {str(e)}")
+                        QMessageBox.critical(self, "Error", f"Failed to save Lundquist fit analysis: {str(e)}")
                         
                 elif self.analysis_type == "ForbMod":
                     # Handle ForbMod analysis with event folders
@@ -3478,3 +3542,10 @@ class PlotWindow(QMainWindow):
                 
         except Exception as e:
             logger.error(f"Error saving Lundquist results to CSV: {str(e)}")
+
+
+    def get_ui_analysis_type(self):
+        """Get analysis type for UI purposes - maps Lundquist fit to In-situ"""
+        if self.analysis_type == "Lundquist fit":
+            return "In-situ analysis"
+        return self.analysis_type

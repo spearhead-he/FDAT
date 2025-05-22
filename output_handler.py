@@ -99,15 +99,34 @@ class OutputHandler:
             
             # Determine CSV path based on analysis type
             if "analysis" in analysis_type.lower():
-                # Already contains "analysis", don't append it again
                 folder_name = analysis_type.lower().replace(' ', '_').replace('-', '')
+            elif analysis_type == "Lundquist fit":
+                folder_name = "lundquist_analysis"
             else:
-                # Add "_analysis" suffix
                 folder_name = f"{analysis_type.lower().replace(' ', '_').replace('-', '')}_analysis"
             
+            # Create sat_dir for ALL analysis types
             sat_dir = os.path.join(self.script_directory, 'OUTPUT', sat, folder_name)
-            csv_file = os.path.join(sat_dir, f"{analysis_type.lower().replace(' ', '_')}_results_{sat}_v8.csv")
+            csv_file = os.path.join(sat_dir, f"{folder_name}_results_{sat}_v8.csv")
             os.makedirs(sat_dir, exist_ok=True)
+            
+       
+            if analysis_type == "Lundquist fit":
+                # Get event date
+                year = int(day.split('/')[0])
+                doy_start = calc_results['timestamps']['doy_start']
+                doy_date = datetime(year, 1, 1) + timedelta(days=doy_start - 1)
+                event_date = doy_date.strftime('%Y_%m_%d')
+                
+                at_dir = os.path.join(self.script_directory, 'OUTPUT', sat, folder_name)  
+                csv_file = os.path.join(sat_dir, f"lundquist_results_{sat}_v8.csv")
+            else:
+                # Use existing logic for other analysis types
+                sat_dir = os.path.join(self.script_directory, 'OUTPUT', sat, folder_name)
+                csv_file = os.path.join(sat_dir, f"{analysis_type.lower().replace(' ', '_')}_results_{sat}_v8.csv")
+            
+            os.makedirs(sat_dir, exist_ok=True)
+            
             
             # Get detector name and process event date
             actual_detector = detector.get(sat, "Unknown")
