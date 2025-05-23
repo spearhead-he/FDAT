@@ -7,6 +7,7 @@ scikit-learn
 # GUI libraries
 PyQt5
 pyqtgraph
+pyqtdarktheme
 
 # Data loading and analysis
 pandas

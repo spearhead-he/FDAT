@@ -6,6 +6,7 @@ import sys
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication
+import qdarktheme
 
 # Set High DPI attributes BEFORE QApplication is created
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
@@ -689,6 +690,9 @@ def main():
         
         # Now create the QApplication (High DPI attributes already set)
         app = QApplication(sys.argv)
+
+        # Apply PyQtDarkTheme auto selection. This provides a working "dark mode"
+        qdarktheme.setup_theme("auto")
         
         # Create settings manager first
         script_directory = os.path.dirname(os.path.abspath(__file__))
