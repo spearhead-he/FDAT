@@ -57,7 +57,7 @@ lmfit
 - Enter start and end dates
 - Select satellite source
 - Input observer name
-- Choose analysis type (ForbMod, In-situ, or Sheath)
+- Choose analysis type (ForbMod, In-situ, Sheath, or Lundquist fit)
 
 **Window 2 (Plot Window):**
 - View magnetic field, solar wind and GCR data, as well as satellite coordinates
