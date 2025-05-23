@@ -33,6 +33,8 @@ mpmath
 pandas
 PyQt5
 pyqtgraph
+pyqtgraph
+pyqtdarktheme
 
 lmfit
 ```
