@@ -51,13 +51,15 @@ Note: If you already have a conda environment with the name `fdat`, step 4 will 
 
 ## Data Usage Instructions
 ### Example data
-The repository [/data/IP](https://github.com/spearhead-he/FDAT/tree/main/data/IP) includes example CDF files for ICMEs from:
+The repository [/data](https://github.com/spearhead-he/FDAT/tree/main/data) includes example IP/GCR CDF files for ICMEs from:
 
 Wind (1995 - 1997)
 
 Helios1 (1974 - 1985)
 
 Solar Orbiter (2020 - 2024)
+
+SOHO/EPHIN (1995-1997)
 
 ### Full Dataset
 The complete dataset with available observations (larger archive) can be downloaded from [Google Drive](https://drive.google.com/drive/folders/1qkgmmhZjM6j2k7IeIFOxNSm9oydV_Yse?usp=drive_link).
@@ -94,9 +96,7 @@ Currently included satellite data ranges:
         
 ## Version
 
-Current Version: v8.1 (16-05-2025)
-
-More information about GUI functionality find in [readme](https://github.com/spearhead-he/FDAT/tree/main/FDAT_readme.txt) file.
+More information about GUI functionality and versions find in [readme](https://github.com/spearhead-he/FDAT/tree/main/FDAT_readme.txt) file.
 
 ## Contact
 
@@ -104,4 +104,4 @@ For questions and support:
 
 M.Dumbovic (mateja.dumbovic@geof.unizg.hr)
 
-G. Chikunova (galina.chikunova@geof.unizg.hr)
+G. Chikunova (chipika3@gmail.com)
