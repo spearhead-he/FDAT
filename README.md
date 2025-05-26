@@ -48,6 +48,16 @@ Note: If you already have a conda environment with the name `fdat`, step 4 will 
    ```
 3. Start the tool by running `python FDAT_main.py`
 
+### Updating
+
+To update your local installation, in principle you need to repeat steps 2 to 4 of [Installation](https://github.com/jgieseler/FDAT#installation), replacing the previous installation:
+
+1. [Download this file](https://github.com/spearhead-he/FDAT/archive/refs/heads/main.zip) and extract to a folder of your choice, replacing the previous version. (Or update the cloned repository with `git`).
+2. Open a terminal or miniforge prompt and move to the directory used in step 1.
+3. Create a conda environment with all required dependencies **(replacing the previously created one)** by running:
+   ```
+   conda env create -f environment.yml --yes
+   ```
 
 ## Data Usage Instructions
 ### Example data
