@@ -37,7 +37,9 @@ FDAT enables to:
    conda env create -f environment.yml
    ```
 
-Note: If you already have a conda environment with the name `fdat`, step 4 will fail with an error. In this case, open the file `environment.yml` with a text editor and replace `fdat` in the first line with a different name (e.g., `fdat2`). Afterwards, do step 4 above again. You also need to use this new name in step 2 of [Running](https://github.com/jgieseler/FDAT#running) below! 
+Note: 
+- If you already have a conda environment with the name `fdat`, step 4 will fail with an error. In this case, open the file `environment.yml` with a text editor and replace `fdat` in the first line with a different name (e.g., `fdat2`). Afterwards, do step 4 above again. You also need to use this new name in step 2 of [Running](https://github.com/jgieseler/FDAT#running) below!
+- If you don't want to use `conda`, you can in step 4 create a virtual Python environment and install the required packages with `pip install -r requirements.txt`. Because this could fail in some configurations, it is not recommended.
 
 ### Running
 
