@@ -1,0 +1,30 @@
+{
+    "description": "<p>
+    A graphical interface tool for analyzing Forbush decrease and Interplanetary Coronal Mass Ejection (ICME) events, conducting <a href=\"https://dx.doi.org/10.3847/1538-4357/aac2de\">ForbMod</a> best-fit calculations on selected data regions and performing in-situ analysis of ICMEs.</p>",
+    "license": "BSD-3-Clause", 
+    "title": "Forbush Decrease Analysis Tool (FDAT)", 
+    "grants": [
+        {
+            "id": "10.13039/501100000780::101135044"
+        }
+    ], 
+    "upload_type": "software", 
+    "creators": [
+        {
+            "orcid": "0000-0002-1317-0020", 
+            "affiliation": "University of Zagreb", 
+            "name": "Chikunova, Galina"
+        },
+        {
+            "orcid": "0000-0002-8680-8267", 
+            "affiliation": "University of Zagreb", 
+            "name": "Dumbovic, Mateja"
+        }, 
+        {
+            "orcid": "0000-0003-1848-7067", 
+            "affiliation": "University of Turku", 
+            "name": "Gieseler,  Jan"
+        }
+    ], 
+    "access_right": "open"
+}
