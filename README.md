@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15753634.svg)](https://doi.org/10.5281/zenodo.15753634)
+
 # FDAT - Forbush Decrease Analysis Tool
 
 A graphical interface tool for analyzing Forbush decrease and Interplanetary Coronal Mass Ejection (ICME) events, conducting [ForbMod](https://dx.doi.org/10.3847/1538-4357/aac2de) best-fit calculations on selected data regions and performing in-situ analysis of ICMEs.
